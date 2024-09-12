@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	sse_chat "github.com/olegsxm/go-sse-chat.git/internal/apps/sse-chat"
+)
 
 func main() {
-	fmt.Println("Hello, sse chat!")
+	sse_chat.Run()
 }
