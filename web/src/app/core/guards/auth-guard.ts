@@ -5,7 +5,7 @@ export function AuthGuard(): CanActivateFn {
   console.log('auth guard');
 
   return () => {
-    const a = true;
+    const a = false;
 
     if (!a) {
       const router = inject(Router);
