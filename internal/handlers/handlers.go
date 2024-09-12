@@ -1,13 +1,24 @@
 package handlers
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"fmt"
 
-type HandlerConstructorType int
+	"github.com/gofiber/fiber/v2"
+)
 
-func New(app *fiber.App) HandlerConstructorType {
+type Handlers struct {
+	app *fiber.App
+}
+
+func New(app *fiber.App) Handlers {
+	fmt.Println("Initializing handlers")
+
 	api := app.Group("/api")
+	auth := api.Group("/auth")
 
-	authHandlers(api)
+	authHandlers(auth)
 
-	return 0
+	return Handlers{
+		app: app,
+	}
 }
