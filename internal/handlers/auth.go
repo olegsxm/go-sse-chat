@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"fmt"
+	"github.com/gofiber/fiber/v2/log"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -12,10 +12,12 @@ type credentials struct {
 
 func authHandlers(auth fiber.Router) {
 
-	fmt.Println("Auth navigation initialize")
+	log.Debug("Auth navigation initialize")
 
 	auth.Post("/sign-in", func(c *fiber.Ctx) error {
 		var creds credentials
+
+		log.Debug("Debuggg")
 
 		if err := c.BodyParser(&creds); err != nil {
 			return fiber.ErrBadRequest
@@ -25,8 +27,6 @@ func authHandlers(auth fiber.Router) {
 		//
 		//fmt.Println(errs)
 
-		return c.JSON(fiber.Map{
-			"success": true,
-		})
+		return c.JSON(creds)
 	})
 }
