@@ -1,6 +1,8 @@
 package validator
 
 import (
+	"fmt"
+
 	"github.com/go-playground/locales/ru"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
@@ -57,7 +59,10 @@ func New() *XValidator {
 
 	validate = validator.New()
 
-	ru_translations.RegisterDefaultTranslations(validate, trans)
+	if err := ru_translations.RegisterDefaultTranslations(validate, trans); err == nil {
+		fmt.Println("Initialize validator error ", err)
+		return nil
+	}
 
 	return &XValidator{validate, trans}
 }

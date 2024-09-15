@@ -7,7 +7,7 @@ import (
 )
 
 type credentials struct {
-	Login string `json:"login"`
+	Login string `json:"login" validate:"required"`
 }
 
 func authHandlers(auth fiber.Router) {
@@ -18,7 +18,12 @@ func authHandlers(auth fiber.Router) {
 		var creds credentials
 
 		if err := c.BodyParser(&creds); err != nil {
+			return fiber.ErrBadRequest
 		}
+		//
+		//errs := validate.Struct(creds)
+		//
+		//fmt.Println(errs)
 
 		return c.JSON(fiber.Map{
 			"success": true,
