@@ -18,9 +18,10 @@ func Run() {
 	fx.New(
 		fx.Provide(
 			server.NewHttpServer(":3000"),
+			handlers.New,
 		),
-		fx.Provide(handlers.New),
-		fx.Invoke(func(h handlers.Handlers, f *fiber.App) {
+		fx.Invoke(func(app *fiber.App, h *handlers.Handlers) {
+			server.Run(app)
 			_ = h
 		}),
 	).Run()

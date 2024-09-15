@@ -10,7 +10,7 @@ type Handlers struct {
 	app *fiber.App
 }
 
-func New(app *fiber.App) Handlers {
+func New(app *fiber.App) *Handlers {
 	fmt.Println("Initializing handlers")
 
 	api := app.Group("/api")
@@ -18,7 +18,7 @@ func New(app *fiber.App) Handlers {
 
 	authHandlers(auth)
 
-	return Handlers{
+	return &Handlers{
 		app: app,
 	}
 }
