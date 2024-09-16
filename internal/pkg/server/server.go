@@ -2,13 +2,16 @@ package server
 
 import (
 	"fmt"
-	"github.com/gofiber/fiber/v2/log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
+
+	"github.com/gofiber/fiber/v2/log"
 
 	"github.com/goccy/go-json"
 
+	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
@@ -33,6 +36,14 @@ func NewHttpServer() *fiber.App {
 	})
 
 	app.Use(cors.New())
+
+	app.Use(jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{Key: []byte(os.Getenv("SECRET_KEY"))},
+		Filter: func(ctx *fiber.Ctx) bool {
+			path := string(ctx.Request().URI().Path())
+			return strings.Contains(path, "/auth/") || strings.Contains(path, "/ping")
+		},
+	}))
 
 	app.Get("/ping", func(c *fiber.Ctx) error {
 		return c.SendString("pong")

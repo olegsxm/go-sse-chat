@@ -59,9 +59,8 @@ func New() *XValidator {
 
 	validate = validator.New()
 
-	if err := ru_translations.RegisterDefaultTranslations(validate, trans); err == nil {
+	if err := ru_translations.RegisterDefaultTranslations(validate, trans); err != nil {
 		fmt.Println("Initialize validator error ", err)
-		return nil
 	}
 
 	return &XValidator{validate, trans}
