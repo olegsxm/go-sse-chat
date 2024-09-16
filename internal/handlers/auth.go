@@ -23,12 +23,18 @@ func authHandlers(auth fiber.Router) {
 		}
 
 		err := validate.Struct(&creds)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
 
+		token, err := services.Auth.SignIn(creds.Login, creds.Password)
 		if err != nil {
 			return err
 		}
 
-		return c.JSON(creds)
+		return c.JSON(fiber.Map{
+			"token": token,
+		})
 	})
 
 	auth.Post("/sign-up", func(c *fiber.Ctx) error {
@@ -41,11 +47,17 @@ func authHandlers(auth fiber.Router) {
 		err := validate.Struct(&creds)
 
 		if err != nil {
-			return err
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
-		services.Auth.SignUp(creds.Login, creds.Password)
+		token, err := services.Auth.SignUp(creds.Login, creds.Password)
 
-		return c.JSON(creds)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+
+		return c.JSON(fiber.Map{
+			"token": token,
+		})
 	})
 }

@@ -20,14 +20,15 @@ import (
 func Run() {
 	fx.New(
 		fx.Provide(
-			server.NewHttpServer,
 			validator.New,
-			db.New,
+			server.NewHttpServer,
+			db.NewSqlDb,
 			repository.New,
 			services.New,
 			handlers.New,
 		),
 		fx.Invoke(func(app *fiber.App, h *handlers.ConstructorType, d *sql.DB) {
+			db.InitDb(d)
 			server.Run(os.Getenv("SSE_SERVER_PORT"), app)
 			defer d.Close()
 		}),
