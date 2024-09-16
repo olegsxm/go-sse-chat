@@ -60,4 +60,21 @@ func authHandlers(auth fiber.Router) {
 			"token": token,
 		})
 	})
+
+	auth.Get("/check-login", func(c *fiber.Ctx) error {
+
+		login := c.Query("login")
+
+		if len(login) == 0 {
+			return fiber.NewError(fiber.StatusBadRequest, "login required")
+		}
+
+		user, _ := services.Auth.FindUserByLogin(login)
+
+		if user.ID == 0 {
+			return c.SendStatus(200)
+		}
+
+		return c.SendStatus(fiber.StatusBadRequest)
+	})
 }
