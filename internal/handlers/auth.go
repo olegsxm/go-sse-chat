@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v2/log"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -11,11 +9,9 @@ type credentials struct {
 	Password string `json:"password" validate:"required"`
 }
 
-func authHandlers(auth fiber.Router) {
+func authHandlers(router fiber.Router) {
 
-	log.Debug("Auth navigation initialize")
-
-	auth.Post("/sign-in", func(c *fiber.Ctx) error {
+	router.Post("/sign-in", func(c *fiber.Ctx) error {
 		var creds credentials
 
 		if err := c.BodyParser(&creds); err != nil {
@@ -37,7 +33,7 @@ func authHandlers(auth fiber.Router) {
 		})
 	})
 
-	auth.Post("/sign-up", func(c *fiber.Ctx) error {
+	router.Post("/sign-up", func(c *fiber.Ctx) error {
 		var creds credentials
 
 		if err := c.BodyParser(&creds); err != nil {
@@ -61,7 +57,7 @@ func authHandlers(auth fiber.Router) {
 		})
 	})
 
-	auth.Get("/check-login", func(c *fiber.Ctx) error {
+	router.Get("/check-login", func(c *fiber.Ctx) error {
 
 		login := c.Query("login")
 

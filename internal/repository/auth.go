@@ -14,11 +14,7 @@ func (r *authRepository) FindUserByLogin(login string) (models.User, error) {
 	user := models.User{}
 	row := db.QueryRow(`select id, login, password from users where login = ?`, login)
 
-	err := row.Scan(&user.ID, &user.Login, &user.Password)
-
-	if err != nil {
-		return models.User{}, err
-	}
+	row.Scan(&user.ID, &user.Login, &user.Password)
 
 	return user, nil
 

@@ -10,9 +10,10 @@ import (
 
 var secretKey = []byte(os.Getenv("SECRET_KEY"))
 
-func CreateToken(login string) (string, error) {
+func CreateToken(id int64, login string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
+			"id":    id,
 			"login": login,
 			"exp":   time.Now().Add(time.Hour * 240).Unix(),
 		})

@@ -61,7 +61,7 @@ func Run(port string, app *fiber.App) *int {
 
 	c := make(chan os.Signal, 1)
 
-	// Create channel to signify a signal being sent
+	// CreateMessage channel to signify a signal being sent
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM) // When an interrupt or termination signal is sent, notify the channel
 
 	_ = <-c // This blocks the main thread until an interrupt is received

@@ -23,7 +23,7 @@ func (s *authService) SignIn(login, password string) (string, error) {
 		return "", errors.New("invalid credentials")
 	}
 
-	return jwt.CreateToken(login)
+	return jwt.CreateToken(user.ID, login)
 
 }
 
@@ -52,7 +52,7 @@ func (s *authService) SignUp(l string, p string) (string, error) {
 
 	user.ID = userId
 
-	token, err := jwt.CreateToken(user.Login)
+	token, err := jwt.CreateToken(userId, user.Login)
 
 	if err != nil {
 		return "", errors.New("error creating token")
