@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"os"
 
 	"github.com/gofiber/fiber/v2/log"
 	_ "github.com/mattn/go-sqlite3"
@@ -22,16 +21,27 @@ func NewSqlDb() *sql.DB {
 }
 
 func InitDb(db *sql.DB) {
-	file, err := os.ReadFile("./sql/init-user-table.sql")
+	var err error
+
+	_, err = db.Exec(create_users_table_query)
+
 	if err != nil {
-		log.Fatal("Error init user table file error: ", err)
+		log.Fatal("Error init user table error: ", err)
 	}
 
-	initUserTableQuery := string(file)
+	_, err = db.Exec(create_messages_table_query)
 
-	_, e := db.Exec(initUserTableQuery)
+	if err != nil {
+		log.Fatal("Error init messages table error: ", err)
+	}
 
-	if e != nil {
-		log.Fatal("Error init user table error: ", e)
+	_, err = db.Exec(create_chats_table_query)
+	if err != nil {
+		log.Fatal("Error init chats table error: ", err)
+	}
+
+	_, err = db.Exec(create_chat_members_table)
+	if err != nil {
+		log.Fatal("Error init chats members table error: ", err)
 	}
 }
