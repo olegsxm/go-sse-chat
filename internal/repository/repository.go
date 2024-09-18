@@ -9,6 +9,7 @@ import (
 type Repository struct {
 	Auth    *authRepository
 	Message *messageRepository
+	Chat    *chatRepository
 }
 
 var db *sql.DB
@@ -23,5 +24,6 @@ func New(d *sql.DB) *Repository {
 	return &Repository{
 		Auth:    &authRepository{},
 		Message: &messageRepository{},
+		Chat:    &chatRepository{},
 	}
 }

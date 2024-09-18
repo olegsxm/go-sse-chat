@@ -23,9 +23,11 @@ func New(app *fiber.App, s *srv.Services) *ConstructorType {
 	api := app.Group("/api")
 	auth := api.Group("/auth")
 	messages := api.Group("/messages")
+	chat := api.Group("/chat")
 
 	authHandlers(auth)
 	messageHandler(messages)
+	chatHandlers(chat)
 
 	return &ConstructorType{}
 }
