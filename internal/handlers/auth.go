@@ -11,6 +11,13 @@ type credentials struct {
 
 func authHandlers(router fiber.Router) {
 
+	// SignIn Login in Chat
+	//	@Summary	Login in Chat
+	//	@Tags		auth
+	//	@Accept		json
+	//	@Produce	json
+	//	@Success	200
+	//	@Router		/api/auth/sign-in [post]
 	router.Post("/sign-in", func(c *fiber.Ctx) error {
 		var creds credentials
 

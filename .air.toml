@@ -5,7 +5,7 @@ tmp_dir = "tmp"
 [build]
   args_bin = []
   bin = "./tmp/sse-chat"
-  cmd = "go build -o ./tmp/sse-chat ./cmd/sse-chat/main.go"
+  cmd = "go build -o ./tmp/sse-chat.exe ./cmd/sse-chat/main.go"
   delay = 1000
   exclude_dir = ["assets", "tmp", "web", "vendor", "testdata", "node_modules", ".idea", ".vscode"]
   exclude_file = []

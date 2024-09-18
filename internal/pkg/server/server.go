@@ -39,8 +39,8 @@ func NewHttpServer() *fiber.App {
 	app.Use(cors.New())
 
 	app.Use(swagger.New(swagger.Config{
-		BasePath: "/",
-		FilePath: "./docs/swagger.json",
+		BasePath: "/docs",
+		FilePath: os.Getenv("SWAGGER_CONFIG"),
 		Path:     "swagger",
 		Title:    "Swagger API Docs",
 	}))
