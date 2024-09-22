@@ -1,0 +1,9 @@
+:host {
+  @apply block h-full bg-white w-4/12 max-w-[450px];
+  box-shadow: 0 0 5px 0px #cbcbcb;
+}
+
+.scroll-viewport {
+  @apply h-full;
+}
+

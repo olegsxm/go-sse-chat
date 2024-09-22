@@ -1,0 +1,7 @@
+:host {
+  @apply flex w-full h-[100vh] bg-neutral-900 items-center justify-center;
+}
+
+.main {
+  @apply p-5 bg-neutral-700 rounded-md w-1/3;
+}

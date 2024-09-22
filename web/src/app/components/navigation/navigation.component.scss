@@ -1,0 +1,21 @@
+:host {
+  @apply flex flex-col h-full bg-gray-600 w-24;
+}
+
+
+.avatar {
+  @apply flex justify-center py-5;
+}
+
+.nav {
+  @apply pt-2;
+}
+
+a {
+  @apply block w-full text-center cursor-pointer p-2;
+}
+
+.icon {
+  @apply text-white text-3xl;
+}
+
