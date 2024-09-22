@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TuiButton, TuiLink, TuiTextfield } from '@taiga-ui/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-sign-in-page',
@@ -22,7 +23,7 @@ export class SignInPageComponent {
     password: new FormControl('', Validators.required)
   });
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private authService: AuthService) {
   }
 
   toSignUpPage(e: MouseEvent) {
@@ -30,5 +31,13 @@ export class SignInPageComponent {
 
     this.router.navigateByUrl('auth/sign-up')
       .catch(err => console.log(err));
+  }
+
+  signIn() {
+    this.authService.signIn(this.form.value)
+      .subscribe(res => {
+        this.authService.token = res.token;
+        this.router.navigateByUrl('/');
+      });
   }
 }

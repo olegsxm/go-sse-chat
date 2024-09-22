@@ -45,6 +45,7 @@ export class SignUpPageComponent {
     this.authService.signUp(this.form.value)
       .subscribe(res => {
         this.authService.token = res.token;
+        this.router.navigateByUrl('/');
       });
   }
 }
