@@ -1,14 +1,15 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
+import { AuthService } from '../services/auth/auth.service';
 
 export function AuthGuard(): CanActivateFn {
-  console.log('auth guard');
-
   return () => {
-    const a = false;
+    const authService = inject(AuthService);
+    const router = inject(Router);
+    
+    const a = !!authService.token;
 
     if (!a) {
-      const router = inject(Router);
       return router.createUrlTree(['/auth']);
     }
 

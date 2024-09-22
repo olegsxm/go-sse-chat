@@ -12,7 +12,6 @@ import (
 	"github.com/goccy/go-json"
 
 	jwtware "github.com/gofiber/contrib/jwt"
-	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
@@ -38,12 +37,12 @@ func NewHttpServer() *fiber.App {
 
 	app.Use(cors.New())
 
-	app.Use(swagger.New(swagger.Config{
-		BasePath: "/docs",
-		FilePath: os.Getenv("SWAGGER_CONFIG"),
-		Path:     "swagger",
-		Title:    "Swagger API Docs",
-	}))
+	//app.Use(swagger.New(swagger.Config{
+	//	BasePath: "/docs",
+	//	FilePath: os.Getenv("SWAGGER_CONFIG"),
+	//	Path:     "swagger",
+	//	Title:    "Swagger API Docs",
+	//}))
 
 	app.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{Key: []byte(os.Getenv("SECRET_KEY"))},

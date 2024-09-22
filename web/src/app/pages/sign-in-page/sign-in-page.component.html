@@ -1,0 +1,41 @@
+<form autocomplete="off" [formGroup]="form">
+
+  <h2 class="text-center text-4xl text-white mb-5">Login to chat</h2>
+
+  <tui-textfield tuiTextfieldSize="m" class="mb-4">
+    <input
+      formControlName="login"
+      tuiTextfield
+      placeholder="Login"
+    />
+  </tui-textfield>
+
+  <tui-textfield tuiTextfieldSize="m" class="mb-4">
+    <input
+      formControlName="password"
+      tuiTextfield
+      placeholder="Password"
+    />
+  </tui-textfield>
+
+  <button
+    class="block w-full mb-3"
+    appearance="opposite"
+    tuiButton
+    type="button"
+    size="m">
+    LogIn
+  </button>
+
+  <div class="text-right">
+    <button
+      class="text-white"
+      tuiLink
+      type="button"
+      [pseudo]="true"
+      (click)="toSignUpPage($event)"
+    >
+      Нет аккунта?
+    </button>
+  </div>
+</form>

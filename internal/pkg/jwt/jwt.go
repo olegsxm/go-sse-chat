@@ -41,3 +41,19 @@ func VerifyToken(tokenString string) error {
 
 	return nil
 }
+
+func DecodeToken(token string) jwt.MapClaims {
+	claims := jwt.MapClaims{}
+
+	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secretKey), nil
+	})
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	claims["id"] = int(claims["id"].(float64))
+
+	return claims
+}
