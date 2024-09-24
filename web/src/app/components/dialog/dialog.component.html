@@ -3,15 +3,15 @@
     <tui-avatar
       size="m"
       appearance="accent"
-      src="@tui.user"
+      [src]="dialog.name[0]"
     />
   </div>
 
   <div class="name">
-    Contact Name
+    {{ dialog.name }}
   </div>
 
-  <div class="counter">
-    10
-  </div>
+  <!--  <div class="counter">-->
+  <!--    10-->
+  <!--  </div>-->
 </div>

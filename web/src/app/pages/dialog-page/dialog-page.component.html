@@ -1,2 +1,2 @@
-<app-dialogs />
-<app-chat class="flex-1" />
+<app-dialogs [dialogs]="(chats$ | async) || []" (setActiveChat)="setActiveChat($event)" />
+<app-chat class="flex-1" [chat]="chat$ | async" />

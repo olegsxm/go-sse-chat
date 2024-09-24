@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   TuiIcon,
@@ -7,14 +7,16 @@ import {
   tuiScrollbarOptionsProvider,
   TuiTextfieldComponent,
   TuiTextfieldDirective,
-  TuiTextfieldOptionsDirective,
+  TuiTextfieldOptionsDirective
 } from '@taiga-ui/core';
 import { DialogComponent } from '../dialog/dialog.component';
-import {
-  CdkFixedSizeVirtualScroll,
-  CdkVirtualForOf,
-  CdkVirtualScrollViewport,
-} from '@angular/cdk/scrolling';
+import { CdkFixedSizeVirtualScroll, CdkVirtualForOf, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
+
+
+import { IChat } from '../../core/models/chat.model';
+import { ChatService } from '../../core/services/chat/chat.service';
+import { FormControl } from '@angular/forms';
+import { SearchComponent } from '../search.component';
 
 @Component({
   selector: 'app-dialogs',
@@ -31,19 +33,23 @@ import {
     TuiScrollable,
     CdkFixedSizeVirtualScroll,
     CdkVirtualForOf,
+    SearchComponent
   ],
   templateUrl: './dialogs.component.html',
   styleUrl: './dialogs.component.scss',
   providers: [
     tuiScrollbarOptionsProvider({
-      mode: 'hover',
-    }),
-  ],
+      mode: 'hover'
+    })
+  ]
 })
 export class DialogsComponent {
-  dialogs = new Array(25).fill(0);
+  @Input() dialogs: IChat[] = [];
+  @Output() setActiveChat = new EventEmitter<IChat>();
 
-  constructor() {
-    console.log(this.dialogs);
+  search = new FormControl(null);
+
+  constructor(private chatService: ChatService) {
   }
+
 }
