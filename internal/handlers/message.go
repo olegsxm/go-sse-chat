@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -30,5 +31,33 @@ func messageHandler(router fiber.Router) {
 		}
 
 		return ctx.JSON(message)
+	})
+
+	router.Get("/", func(ctx *fiber.Ctx) error {
+		// TODO check user access
+
+		chatId, err := strconv.Atoi(ctx.Query("chat-id"))
+
+		if err != nil {
+			return fiber.ErrBadRequest
+		}
+
+		limit, err := strconv.Atoi(ctx.Query("limit"))
+		if err != nil {
+			limit = 0
+		}
+
+		lastMessageId, err := strconv.Atoi(ctx.Query("last-id"))
+		if err != nil {
+			lastMessageId = 0
+		}
+
+		messages, e := services.Message.GetMessages(chatId, limit, lastMessageId)
+		if e != nil {
+			log.Error(e)
+			return fiber.ErrInternalServerError
+		}
+
+		return ctx.JSON(messages)
 	})
 }

@@ -75,3 +75,7 @@ func (s *authService) checkPassword(hash, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
+
+func (s *authService) SearchUser(login string) ([]models.User, error) {
+	return repository.Auth.SearchUser(login)
+}

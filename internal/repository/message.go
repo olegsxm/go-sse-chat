@@ -85,3 +85,28 @@ func (r *messageRepository) CreateMessage(message models.Message) (models.Messag
 
 	return message, nil
 }
+
+func (r *messageRepository) GetLastMessages(chatId, limit int) ([]models.Message, error) {
+	messages := make([]models.Message, 0, 20)
+
+	rows, err := db.Query("select id, message, sender, recipient, chat_id, created_at from messages where chat_id = ? order by created_at DESC limit ?", chatId, limit)
+	defer rows.Close()
+
+	if err != nil {
+		return messages, err
+	}
+
+	for rows.Next() {
+		message := models.Message{}
+
+		e := rows.Scan(&message.ID, &message.Message, &message.Sender, &message.Recipient, &message.ChatId, &message.CreatedAt)
+
+		if e != nil {
+			fmt.Println(e)
+		}
+
+		messages = append(messages, message)
+	}
+
+	return messages, nil
+}
