@@ -1,11 +1,14 @@
 import {Route} from '@angular/router';
 import {provideStates} from "@ngxs/store";
 import {ChatState} from "./state/chat/chat.state";
+import {isLoggedGuard} from "./core/guard/is-logged.guard";
+import {authGuard} from "./core/guard/auth.guard";
 
 export const appRoutes: Route[] = [
     {
         path: 'auth',
         loadComponent: () => import('./layouts/auth-layout/auth-layout.component').then(c => c.AuthLayoutComponent),
+        canActivate: [isLoggedGuard],
         children: [
             {
                 path: 'sign-in',
@@ -23,6 +26,7 @@ export const appRoutes: Route[] = [
         providers: [
             provideStates([ChatState])
         ],
+        canActivate: [authGuard],
         children: [
             {
                 path: '',
