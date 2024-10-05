@@ -1,8 +1,4 @@
-interface IMessage {
-    id?: number;
-    message: string;
-    createdAt?: string | Date;
-}
+import {IMessage} from "./message.model";
 
 export interface IContact {
     id: number;

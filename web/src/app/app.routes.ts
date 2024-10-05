@@ -1,4 +1,6 @@
 import {Route} from '@angular/router';
+import {provideStates} from "@ngxs/store";
+import {ChatState} from "./state/chat/chat.state";
 
 export const appRoutes: Route[] = [
     {
@@ -18,6 +20,9 @@ export const appRoutes: Route[] = [
     {
         path: '',
         loadComponent: () => import('./layouts/default-layout/default-layout.component').then(c => c.DefaultLayoutComponent),
+        providers: [
+            provideStates([ChatState])
+        ],
         children: [
             {
                 path: '',
