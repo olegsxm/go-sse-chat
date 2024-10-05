@@ -1,4 +1,6 @@
-# Package Managers
-package-lock.json
-pnpm-lock.yaml
-yarn.lock
+# Add files here to ignore them from prettier formatting
+/dist
+/coverage
+/.nx/cache
+/.nx/workspace-data
+.angular
