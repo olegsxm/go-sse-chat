@@ -24,7 +24,7 @@ export const appRoutes: Route[] = [
         path: '',
         loadComponent: () => import('./layouts/default-layout/default-layout.component').then(c => c.DefaultLayoutComponent),
         providers: [
-            provideStates([ChatState])
+            provideStates([ChatState]),
         ],
         canActivate: [authGuard],
         children: [

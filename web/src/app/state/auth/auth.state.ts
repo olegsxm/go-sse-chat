@@ -29,6 +29,11 @@ export class AuthState {
         return state;
     }
 
+    @Selector()
+    static getUser(state: IAuthState) {
+        return state.user;
+    }
+
     @Action(AuthAction)
     auth(ctx: StateContext<IAuthState>, {payload}: AuthAction) {
         localStorage.setItem(ls_token_key, payload.token);

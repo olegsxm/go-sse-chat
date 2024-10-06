@@ -1,19 +1,18 @@
 <div class="bg-white px-3 flex items-center hover:bg-gray-300 cursor-pointer">
     <div>
-        <img class="h-12 w-12 rounded-full" alt=""
-             [src]="contact.avatar || '/images/default-avatar.png'"/>
+        <app-avatar [src]="conversation.avatar || conversation.sender.avatar"/>
     </div>
     <div class="ml-4 flex-1 border-b border-grey-lighter py-4">
         <div class="flex items-bottom justify-between">
-            <p class="text-grey-darkest">
-                {{ contact.name }}
+            <p class="text-grey-darkest font-semibold">
+                {{ conversation.name || conversation.sender.login }}
             </p>
             <p class="text-xs text-grey-darkest">
-                {{ contact.message?.createdAt | date:"MM.dd hh:mm" }}
+                {{ conversation.message.createdAt | date:"MM.dd hh:mm" }}
             </p>
         </div>
         <p class="text-grey-dark mt-1 text-sm">
-            I'll be back
+            {{ conversation.message.message }}
         </p>
     </div>
 </div>

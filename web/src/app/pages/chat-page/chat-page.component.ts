@@ -1,6 +1,11 @@
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {ChatComponent} from "../../components/chat/chat.component";
 import {SidebarComponent} from "../../components/sidebar/sidebar.component";
+import {ChatService} from "../../core/services/chat.service";
+import {Store} from "@ngxs/store";
+import {AuthState} from "../../state/auth/auth.state";
+import {ChatState} from "../../state/chat/chat.state";
+import {AddDialogsAction} from "../../state/chat/chat.actions";
 
 @Component({
     selector: 'app-chat-page',
@@ -9,10 +14,22 @@ import {SidebarComponent} from "../../components/sidebar/sidebar.component";
         ChatComponent,
         SidebarComponent
     ],
+    providers: [ChatService],
     templateUrl: './chat-page.component.html',
     styleUrl: './chat-page.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatPageComponent {
+    private store = inject(Store)
 
+    readonly user = this.store.selectSignal(AuthState.getUser);
+    readonly dialogs = this.store.selectSignal(ChatState.getDialogs);
+
+
+    constructor(private chatService: ChatService) {
+        chatService.getDialog()
+            .subscribe(res => {
+                this.store.dispatch(new AddDialogsAction(res))
+            })
+    }
 }

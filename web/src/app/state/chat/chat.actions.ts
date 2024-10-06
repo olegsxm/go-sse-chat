@@ -1,4 +1,8 @@
-export class ChatAction {
-  static readonly type = '[Chat] Add item';
-  constructor(readonly payload: string) { }
+import {IConversation} from "../../core/models/conversation.model";
+
+export class AddDialogsAction {
+    static readonly type = '[Chat] add dialogs';
+
+    constructor(readonly payload: IConversation[]) {
+    }
 }
