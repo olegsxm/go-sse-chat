@@ -1,35 +1,35 @@
 import {Injectable} from '@angular/core';
 import {Action, Selector, State, StateContext} from '@ngxs/store';
 import {IConversation} from "../../core/models/conversation.model";
-import {AddDialogsAction} from "./chat.actions";
+import {AddConversationsAction} from "./chat.actions";
 
-export interface ChatStateModel {
-    dialogs: IConversation[];
+export interface IChatState {
+    conversations: IConversation[];
 }
 
-@State<ChatStateModel>({
+@State<IChatState>({
     name: 'chat',
     defaults: {
-        dialogs: []
+        conversations: []
     }
 })
 @Injectable()
 export class ChatState {
 
     @Selector()
-    static getState(state: ChatStateModel) {
+    static getState(state: IChatState) {
         return state;
     }
 
     @Selector()
-    static getDialogs(state: ChatStateModel) {
-        return state.dialogs;
+    static getDialogs(state: IChatState) {
+        return state.conversations;
     }
 
-    @Action(AddDialogsAction)
-    addDialogs(ctx: StateContext<ChatStateModel>, {payload}: AddDialogsAction) {
+    @Action(AddConversationsAction)
+    addDialogs(ctx: StateContext<IChatState>, {payload}: AddConversationsAction) {
         ctx.patchState({
-            dialogs: [...payload, ...ctx.getState().dialogs]
+            conversations: [...payload, ...ctx.getState().conversations]
         })
     }
 }

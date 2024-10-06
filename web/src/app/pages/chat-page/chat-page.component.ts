@@ -5,7 +5,7 @@ import {ChatService} from "../../core/services/chat.service";
 import {Store} from "@ngxs/store";
 import {AuthState} from "../../state/auth/auth.state";
 import {ChatState} from "../../state/chat/chat.state";
-import {AddDialogsAction} from "../../state/chat/chat.actions";
+import {AddConversationsAction} from "../../state/chat/chat.actions";
 
 @Component({
     selector: 'app-chat-page',
@@ -29,7 +29,7 @@ export class ChatPageComponent {
     constructor(private chatService: ChatService) {
         chatService.getDialog()
             .subscribe(res => {
-                this.store.dispatch(new AddDialogsAction(res))
+                this.store.dispatch(new AddConversationsAction(res))
             })
     }
 }
