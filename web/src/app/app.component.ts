@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {RouterModule} from '@angular/router';
 import {SidebarComponent} from "./components/sidebar/sidebar.component";
-import {ChatComponent} from "./components/chat/chat.component";
+import {ChatComponent} from "./pages/chat/chat.component";
 import {initFlowbite} from "flowbite";
 
 @Component({

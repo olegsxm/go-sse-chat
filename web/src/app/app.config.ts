@@ -1,5 +1,5 @@
 import {ApplicationConfig, provideZoneChangeDetection} from '@angular/core';
-import {provideRouter} from '@angular/router';
+import {provideRouter, withComponentInputBinding} from '@angular/router';
 import {appRoutes} from './app.routes';
 import {provideStore} from '@ngxs/store';
 import {provideHttpClient, withFetch, withInterceptors} from "@angular/common/http";
@@ -13,7 +13,8 @@ export const appConfig: ApplicationConfig = {
     providers: [
         provideZoneChangeDetection({eventCoalescing: true}),
         provideHttpClient(withFetch(), withInterceptors([apiInterceptor, authInterceptor])),
-        provideRouter(appRoutes), provideStore(
+        provideRouter(appRoutes, withComponentInputBinding()),
+        provideStore(
             [AuthState],
             withNgxsLoggerPlugin(),
             withNgxsReduxDevtoolsPlugin()

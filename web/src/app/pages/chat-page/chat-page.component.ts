@@ -1,18 +1,20 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
-import {ChatComponent} from "../../components/chat/chat.component";
+import {ChatComponent} from "../chat/chat.component";
 import {SidebarComponent} from "../../components/sidebar/sidebar.component";
 import {ChatService} from "../../core/services/chat.service";
 import {Store} from "@ngxs/store";
 import {AuthState} from "../../state/auth/auth.state";
 import {ChatState} from "../../state/chat/chat.state";
 import {AddConversationsAction} from "../../state/chat/chat.actions";
+import {RouterOutlet} from "@angular/router";
 
 @Component({
     selector: 'app-chat-page',
     standalone: true,
     imports: [
         ChatComponent,
-        SidebarComponent
+        SidebarComponent,
+        RouterOutlet
     ],
     providers: [ChatService],
     templateUrl: './chat-page.component.html',

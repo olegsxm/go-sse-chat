@@ -1,4 +1,4 @@
-<div class="bg-white px-3 flex items-center hover:bg-gray-300 cursor-pointer">
+<div class="bg-white px-3 flex items-center hover:bg-gray-300 cursor-pointer" (click)="openConversation()">
     <div>
         <app-avatar [src]="conversation.avatar || conversation.sender.avatar"/>
     </div>

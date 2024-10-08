@@ -30,7 +30,18 @@ export const appRoutes: Route[] = [
         children: [
             {
                 path: '',
-                loadComponent: () => import('./pages/chat-page/chat-page.component').then(c => c.ChatPageComponent)
+                loadComponent: () => import('./pages/chat-page/chat-page.component').then(c => c.ChatPageComponent),
+                children: [
+                    {
+                        path: '',
+                        loadComponent: () => import('./pages/start-chat-page/start-chat-page.component')
+                            .then(c => c.StartChatPageComponent)
+                    },
+                    {
+                        path: ':conversation',
+                        loadComponent: () => import('./pages/chat/chat.component').then(c => c.ChatComponent)
+                    }
+                ]
             }
         ]
     },
