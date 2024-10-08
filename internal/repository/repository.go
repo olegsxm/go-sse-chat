@@ -1,12 +1,12 @@
 package repository
 
-type repository struct {
+type Repository struct {
 }
 
-func (r *repository) Auth() {
+func (r *Repository) Auth() {
 
 }
 
-func New() repository {
-	return repository{}
+func New() Repository {
+	return Repository{}
 }

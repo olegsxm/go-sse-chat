@@ -4,11 +4,11 @@ type IRepository interface {
 	Auth()
 }
 
-type useCases struct{}
+type UseCases struct{}
 
-func (c *useCases) Auth() {
+func (c *UseCases) Auth() {
 }
 
-func New(r IRepository) useCases {
-	return useCases{}
+func New(r IRepository) UseCases {
+	return UseCases{}
 }
