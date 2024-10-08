@@ -1,34 +1,40 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { TuiButton, TuiLink, TuiTextfield } from '@taiga-ui/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {Router, RouterLink} from "@angular/router";
+import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import {AuthService} from "../../core/services/auth.service";
+import {Store} from "@ngxs/store";
+import {AuthAction} from "../../state/auth/auth.actions";
 
 @Component({
-  selector: 'app-sign-in-page',
-  standalone: true,
-  imports: [
-    TuiTextfield,
-    ReactiveFormsModule,
-    TuiButton,
-    TuiLink
-  ],
-  templateUrl: './sign-in-page.component.html',
-  styleUrl: './sign-in-page.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-sign-in-page',
+    standalone: true,
+    imports: [
+        RouterLink,
+        ReactiveFormsModule
+    ],
+    templateUrl: './sign-in-page.component.html',
+    styleUrl: './sign-in-page.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SignInPageComponent {
-  form: FormGroup = new FormGroup({
-    login: new FormControl('', Validators.required),
-    password: new FormControl('', Validators.required)
-  });
+    authService: AuthService = inject(AuthService);
+    store = inject(Store)
+    router = inject(Router)
 
-  constructor(private router: Router) {
-  }
+    form = new FormGroup({
+        login: new FormControl('', [Validators.required]),
+        password: new FormControl('', [Validators.required]),
+    })
 
-  toSignUpPage(e: MouseEvent) {
-    e.preventDefault();
+    signIn() {
+        if (this.form.invalid) {
+            return
+        }
 
-    this.router.navigateByUrl('auth/sign-up')
-      .catch(err => console.log(err));
-  }
+        this.authService.signIn(this.form.value.login as string, this.form.value.password as string)
+            .subscribe(res => {
+                this.store.dispatch(new AuthAction(res));
+                this.router.navigateByUrl('/')
+            })
+    }
 }

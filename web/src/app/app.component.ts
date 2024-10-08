@@ -1,12 +1,18 @@
-import { TuiRoot } from '@taiga-ui/core';
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import {Component, OnInit} from '@angular/core';
+import {RouterModule} from '@angular/router';
+import {SidebarComponent} from "./components/sidebar/sidebar.component";
+import {ChatComponent} from "./pages/chat/chat.component";
+import {initFlowbite} from "flowbite";
 
 @Component({
-  standalone: true,
-  imports: [RouterModule, TuiRoot],
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+    standalone: true,
+    imports: [RouterModule, SidebarComponent, ChatComponent],
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss',
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+    ngOnInit() {
+        initFlowbite();
+    }
+}

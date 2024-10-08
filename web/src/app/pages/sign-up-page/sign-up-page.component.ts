@@ -1,50 +1,40 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import {
-  TuiButton,
-  TuiLink,
-  TuiTextfieldComponent,
-  TuiTextfieldDirective,
-  TuiTextfieldOptionsDirective
-} from '@taiga-ui/core';
-import { AuthService } from '../../core/services/auth/auth.service';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {Router, RouterLink} from "@angular/router";
+import {AuthService} from "../../core/services/auth.service";
+import {Store} from "@ngxs/store";
+import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import {AuthAction} from "../../state/auth/auth.actions";
 
 @Component({
-  selector: 'app-sign-up-page',
-  standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    TuiButton,
-    TuiLink,
-    TuiTextfieldComponent,
-    TuiTextfieldDirective,
-    TuiTextfieldOptionsDirective
-  ],
-  templateUrl: './sign-up-page.component.html',
-  styleUrl: './sign-up-page.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-sign-up-page',
+    standalone: true,
+    imports: [
+        RouterLink,
+        ReactiveFormsModule
+    ],
+    templateUrl: './sign-up-page.component.html',
+    styleUrl: './sign-up-page.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SignUpPageComponent {
-  form: FormGroup = new FormGroup({
-    login: new FormControl('', Validators.required),
-    password: new FormControl('', Validators.required)
-  });
+    authService: AuthService = inject(AuthService);
+    store = inject(Store)
+    router = inject(Router)
 
-  constructor(private router: Router, private authService: AuthService) {
-  }
+    form = new FormGroup({
+        login: new FormControl('', [Validators.required]),
+        password: new FormControl('', [Validators.required]),
+    })
 
-  toSignInPage(e: MouseEvent) {
-    e.preventDefault();
+    signUp() {
+        if (this.form.invalid) {
+            return
+        }
 
-    this.router.navigateByUrl('auth/sign-in')
-      .catch(err => console.log(err));
-  }
-
-  signUp() {
-    this.authService.signUp(this.form.value)
-      .subscribe(res => {
-        this.authService.token = res.token;
-      });
-  }
+        this.authService.signUp(this.form.value.login as string, this.form.value.password as string)
+            .subscribe(res => {
+                this.store.dispatch(new AuthAction(res));
+                this.router.navigateByUrl('/')
+            })
+    }
 }

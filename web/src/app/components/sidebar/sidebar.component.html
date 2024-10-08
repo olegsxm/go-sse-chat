@@ -1,0 +1,21 @@
+<div class="w-full border flex flex-col">
+    <!-- Header -->
+    <div class="py-2 px-3 bg-grey-lighter flex flex-row justify-between items-center">
+        <div class="flex gap-3 items-center">
+            <app-avatar [src]="data.user?.avatar"/>
+
+            <div class="text-gray-800 text-2xl">
+                {{ data.user?.login }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <app-search/>
+
+    <!-- Contacts -->
+    <div class="bg-grey-lighter flex-1 overflow-auto">
+        <app-contact-list [conversations]="data.dialogs"/>
+    </div>
+
+</div>
