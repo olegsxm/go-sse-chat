@@ -3,6 +3,9 @@ package sse
 import (
 	"context"
 	"errors"
+	"github.com/olegsxm/go-sse-chat.git/internal/handlers"
+	"github.com/olegsxm/go-sse-chat.git/internal/repository"
+	"github.com/olegsxm/go-sse-chat.git/internal/use_cases"
 	"log/slog"
 	"net/http"
 	"time"
@@ -16,13 +19,20 @@ import (
 	"golang.org/x/net/http2"
 )
 
-func Run(context.Context) error {
+func Run(ctx context.Context) error {
 	slog.Info("Sse Chat Running")
+
+	r := repository.New()
+
+	us := use_cases.New(&r)
+
 	h2s := &http2.Server{
 		IdleTimeout: 10 * time.Second,
 	}
 
 	mux := chi.NewRouter()
+
+	handlers.New(ctx, mux, &us)
 
 	mux.Get("/", handler.HandleRoute(func(writer http.ResponseWriter, request *http.Request) error {
 		_, err := writer.Write([]byte("Hello, World!"))
