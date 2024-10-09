@@ -28,6 +28,7 @@ func Run(ctx context.Context) *http.Server {
 	}
 
 	mux := chi.NewRouter()
+
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.Recoverer)
 	mux.Use(middleware.StripSlashes)

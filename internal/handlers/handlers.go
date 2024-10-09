@@ -10,5 +10,5 @@ type IUseCase interface {
 }
 
 func New(ctx context.Context, mux *chi.Mux, cases IUseCase) {
-	mux.Mount("/api/v1", authHandlers())
+	mux.Mount("/api", authHandlers())
 }

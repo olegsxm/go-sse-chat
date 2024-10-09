@@ -1,5 +1,6 @@
 package handlers
 
+import "C"
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/olegsxm/go-sse-chat.git/pkg/handler"
@@ -7,11 +8,15 @@ import (
 )
 
 func authHandlers() *chi.Mux {
-	r := chi.NewRouter()
+	c := chi.NewRouter()
 
-	r.Get("/auth/sign-in", handler.HandleRoute(signIn))
+	c.Route("/v1", func(r chi.Router) {
+		r.Get("/sign-in", handler.HandleRoute(signIn))
+	})
 
-	return r
+	c.Mount("/auth", c)
+
+	return c
 }
 
 func signIn(w http.ResponseWriter, r *http.Request) error {
