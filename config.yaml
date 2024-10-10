@@ -1,0 +1,5 @@
+server:
+  addr: ":443"
+
+swagger:
+  url: "https://localhost:443/swagger/doc.json"
