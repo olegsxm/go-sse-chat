@@ -6,9 +6,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/olegsxm/go-sse-chat.git/pkg/middlewares"
+
+	"github.com/go-chi/cors"
+
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/olegsxm/go-sse-chat.git/internal/config"
-	"github.com/olegsxm/go-sse-chat.git/internal/handlers"
+	"github.com/olegsxm/go-sse-chat.git/internal/controllers"
 	"github.com/olegsxm/go-sse-chat.git/internal/repository"
 	"github.com/olegsxm/go-sse-chat.git/internal/use_cases"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -32,7 +36,7 @@ func Run(ctx context.Context) *http.Server {
 	}
 
 	r := repository.New()
-	us := use_cases.New(&r)
+	uc := use_cases.New(&r)
 
 	h2s := &http2.Server{
 		IdleTimeout: 10 * time.Second,
@@ -44,11 +48,21 @@ func Run(ctx context.Context) *http.Server {
 	mux.Use(middleware.Recoverer)
 	mux.Use(middleware.StripSlashes)
 
+	if !cfg.Production {
+		slog.Debug("Using cors")
+		mux.Use(cors.AllowAll().Handler)
+	}
+
+	api := mux.Route("/api", func(r chi.Router) {
+		r.Use(middlewares.SetResponseHeaders)
+		controllers.New(ctx, r, uc)
+	})
+
+	mux.Mount("/", api)
+
 	mux.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(cfg.Swagger.Url),
 	))
-
-	handlers.New(ctx, mux, &us)
 
 	server := &http.Server{
 		Addr:    cfg.Server.Address,

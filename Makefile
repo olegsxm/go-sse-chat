@@ -4,3 +4,6 @@
 
 swagger:
 	swag init --parseInternal --generalInfo cmd/sse/main.go
+
+json:
+	easyjson -all ./internal/models/*.go

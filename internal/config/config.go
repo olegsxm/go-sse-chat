@@ -11,6 +11,8 @@ import (
 )
 
 type AppConfig struct {
+	Production bool `yaml:"production"`
+
 	Server struct {
 		Address string `yaml:"addr"`
 	} `yaml:"server"`

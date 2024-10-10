@@ -1,26 +1,55 @@
-host: petstore.swagger.io
+basePath: /api/v1
+definitions:
+  models.AuthRequest:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+host: localhost:443
 info:
-  contact:
-    email: support@swagger.io
-    name: API Support
-    url: http://www.swagger.io/support
-  description: This is a sample server Petstore server.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
-  title: Swagger Example API
+  contact: {}
+  title: Chat API
   version: "1.0"
 paths:
-  /accounts/{id}:
-    get:
+  /auth/sign-in:
+    post:
       consumes:
       - application/json
-      description: get string by ID
+      description: Login in Chat
+      parameters:
+      - description: Login Request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.AuthRequest'
       produces:
       - application/json
       responses: {}
-      summary: Show an account
+      summary: Login at chat
       tags:
-      - accounts
+      - Auth
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: SignUp in Chat
+      parameters:
+      - description: Login Request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.AuthRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Register at chat
+      tags:
+      - Auth
 swagger: "2.0"
