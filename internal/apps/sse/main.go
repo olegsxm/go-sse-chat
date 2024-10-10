@@ -6,6 +6,7 @@ import (
 	"github.com/olegsxm/go-sse-chat.git/internal/handlers"
 	"github.com/olegsxm/go-sse-chat.git/internal/repository"
 	"github.com/olegsxm/go-sse-chat.git/internal/use_cases"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"log/slog"
 	"net/http"
 	"time"
@@ -15,6 +16,8 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"golang.org/x/net/http2"
+
+	_ "github.com/swaggo/http-swagger/v2"
 )
 
 func Run(ctx context.Context) *http.Server {
@@ -32,6 +35,10 @@ func Run(ctx context.Context) *http.Server {
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.Recoverer)
 	mux.Use(middleware.StripSlashes)
+
+	mux.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("https://localhost:443/swagger/doc.json"), //The url pointing to API definition
+	))
 
 	handlers.New(ctx, mux, &us)
 

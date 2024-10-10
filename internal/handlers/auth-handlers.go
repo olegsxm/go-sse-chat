@@ -19,6 +19,13 @@ func authHandlers() *chi.Mux {
 	return c
 }
 
+// ShowAccount godoc
+// @Summary      Show an account
+// @Description  get string by ID
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Router       /accounts/{id} [get]
 func signIn(w http.ResponseWriter, r *http.Request) error {
 	_, e := w.Write([]byte("Hello, World!"))
 
