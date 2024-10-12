@@ -3,6 +3,7 @@
 package models
 
 import (
+	sql "database/sql"
 	json "encoding/json"
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
@@ -113,6 +114,12 @@ func easyjson9fb78bfdDecodeGithubComOlegsxmGoSseChatGitInternalModels1(in *jlexe
 			out.ID = int64(in.Int64())
 		case "login":
 			out.Login = string(in.String())
+		case "created":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.Created).UnmarshalJSON(data))
+			}
+		case "updated":
+			easyjson9fb78bfdDecodeDatabaseSql(in, &out.Updated)
 		default:
 			in.SkipRecursive()
 		}
@@ -136,6 +143,67 @@ func easyjson9fb78bfdEncodeGithubComOlegsxmGoSseChatGitInternalModels1(out *jwri
 		const prefix string = ",\"login\":"
 		out.RawString(prefix)
 		out.String(string(in.Login))
+	}
+	{
+		const prefix string = ",\"created\":"
+		out.RawString(prefix)
+		out.Raw((in.Created).MarshalJSON())
+	}
+	{
+		const prefix string = ",\"updated\":"
+		out.RawString(prefix)
+		easyjson9fb78bfdEncodeDatabaseSql(out, in.Updated)
+	}
+	out.RawByte('}')
+}
+func easyjson9fb78bfdDecodeDatabaseSql(in *jlexer.Lexer, out *sql.NullTime) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Time":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.Time).UnmarshalJSON(data))
+			}
+		case "Valid":
+			out.Valid = bool(in.Bool())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson9fb78bfdEncodeDatabaseSql(out *jwriter.Writer, in sql.NullTime) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Time\":"
+		out.RawString(prefix[1:])
+		out.Raw((in.Time).MarshalJSON())
+	}
+	{
+		const prefix string = ",\"Valid\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.Valid))
 	}
 	out.RawByte('}')
 }

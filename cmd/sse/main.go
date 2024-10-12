@@ -2,19 +2,14 @@ package main
 
 import (
 	"context"
-	"errors"
-	"log"
+	_ "github.com/olegsxm/go-sse-chat.git/docs"
+	"github.com/olegsxm/go-sse-chat.git/internal/apps/sse"
+	_ "github.com/olegsxm/go-sse-chat.git/pkg/logger"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
-	"syscall"
 	"time"
-
-	"github.com/olegsxm/go-sse-chat.git/internal/apps/sse"
-
-	_ "github.com/olegsxm/go-sse-chat.git/pkg/logger"
-
-	_ "github.com/olegsxm/go-sse-chat.git/docs"
 )
 
 //	@title		Chat API
@@ -23,37 +18,22 @@ import (
 // @host localhost:443
 // @BasePath  /api/v1
 func main() {
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
 
-	serverCtx, serverStopCtx := context.WithCancel(context.Background())
-
-	server := sse.Run(serverCtx)
-
+	server := sse.New(ctx)
+	// Start server
 	go func() {
-		<-sig
-
-		// Shutdown signal with grace period of 30 seconds
-		shutdownCtx, _ := context.WithTimeout(serverCtx, 30*time.Second)
-
-		go func() {
-			<-shutdownCtx.Done()
-			if shutdownCtx.Err() == context.DeadlineExceeded {
-				log.Fatal("graceful shutdown timed out.. forcing exit.")
-			}
-		}()
-
-		// Trigger graceful shutdown
-		err := server.Shutdown(shutdownCtx)
-		if err != nil {
-			log.Fatal(err)
+		if err := server.ListenAndServeTLS("cert.pem", "key.pem"); err != nil && err != http.ErrServerClosed {
+			slog.Error("shutting down the server")
 		}
-		serverStopCtx()
 	}()
 
-	if err := server.ListenAndServeTLS("server.crt", "server.key"); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		panic(err)
+	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	<-ctx.Done()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		slog.Error(err.Error())
 	}
-
-	<-serverCtx.Done()
 }

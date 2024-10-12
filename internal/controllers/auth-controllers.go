@@ -1,26 +1,20 @@
 package controllers
 
 import (
+	"github.com/labstack/echo/v4"
+	"github.com/olegsxm/go-sse-chat.git/pkg/fjson"
+	validate "github.com/olegsxm/go-sse-chat.git/pkg/validator"
+	"log/slog"
 	"net/http"
 
 	"github.com/olegsxm/go-sse-chat.git/internal/models"
 
-	"github.com/olegsxm/go-sse-chat.git/pkg/fjson"
-
-	"github.com/go-chi/chi/v5"
 	_ "github.com/go-chi/render"
-	"github.com/olegsxm/go-sse-chat.git/pkg/handler"
-	v "github.com/olegsxm/go-sse-chat.git/pkg/validator"
 )
 
-func authHandlers() *chi.Mux {
-	c := chi.NewRouter()
-
-	c.Post("/sign-in", handler.HandleRoute(signIn))
-	c.Post("/sign-up", handler.HandleRoute(signUp))
-
-	c.Mount("/auth", c)
-	return c
+func authHandlers(g *echo.Group) {
+	slog.Debug("Init auth handlers")
+	g.POST("/auth/sign-in", signIn)
 }
 
 //	SignIn godoc
@@ -34,30 +28,20 @@ func authHandlers() *chi.Mux {
 // @Param			data	body	models.AuthRequest	true	"Login Request"
 //
 // @Router			/auth/sign-in [post]
-func signIn(w http.ResponseWriter, r *http.Request) error {
+func signIn(ctx echo.Context) error {
 	c := models.AuthRequest{}
 
-	err := fjson.ParseBody(r.Body, &c)
-	if err != nil {
-		return err
+	if err := fjson.ParseBody(ctx.Request().Body, &c); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	
+	if err := validate.ValidateStruct(c); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	if e := v.ValidateStruct(c); e != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte("Invalid credentials"))
-		return err
-	}
-
-	res, err := uc.Auth().SignIn(c.Login, c.Password)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return err
-	}
-
-	j, _ := res.MarshalJSON()
-
-	_, e := w.Write(j)
-	return e
+	return ctx.JSON(200, echo.Map{
+		"ok": 1,
+	})
 }
 
 //	SignUp godoc

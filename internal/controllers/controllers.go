@@ -2,20 +2,14 @@ package controllers
 
 import (
 	"context"
-
-	"github.com/olegsxm/go-sse-chat.git/internal/interfaces"
-
-	"github.com/go-chi/chi/v5"
+	"github.com/labstack/echo/v4"
+	services "github.com/olegsxm/go-sse-chat.git/internal/services"
 )
 
-type IUseCase interface {
-	Auth() interfaces.IAuth
-}
+var srv *services.Services
 
-var uc IUseCase
-
-func New(ctx context.Context, router chi.Router, cases IUseCase) {
-	uc = cases
-
-	router.Mount("/v1", authHandlers())
+func New(ctx context.Context, router *echo.Group, s *services.Services) {
+	srv = s
+	v1 := router.Group("/v1")
+	authHandlers(v1)
 }
