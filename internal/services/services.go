@@ -1,10 +1,14 @@
 package services
 
+import (
+	"github.com/olegsxm/go-sse-chat.git/internal/repository"
+)
+
 type Services struct {
-	auth AuthService
+	auth *AuthService
 }
 
-func (s *Services) Auth() AuthService {
+func (s *Services) Auth() *AuthService {
 	return s.auth
 }
 
@@ -18,8 +22,8 @@ func (s *Services) Message() {
 	panic("implement me")
 }
 
-func New() Services {
+func New(r *repository.Repository) Services {
 	return Services{
-		auth: newAuthService(),
+		auth: newAuthService(r),
 	}
 }

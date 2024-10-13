@@ -11,9 +11,9 @@ import (
 )
 
 type AppConfig struct {
-	Production bool `yaml:"production"`
-
-	Server struct {
+	Production bool   `yaml:"production"`
+	JWTSecret  string `yaml:"jwt_secret"`
+	Server     struct {
 		Address string `yaml:"addr"`
 	} `yaml:"server"`
 

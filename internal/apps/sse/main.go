@@ -5,6 +5,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/olegsxm/go-sse-chat.git/internal/controllers"
+	"github.com/olegsxm/go-sse-chat.git/internal/db"
+	"github.com/olegsxm/go-sse-chat.git/internal/repository"
 	"github.com/olegsxm/go-sse-chat.git/internal/services"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"log/slog"
@@ -34,16 +36,25 @@ func New(ctx context.Context) *http.Server {
 	}
 
 	e := echo.New()
+	// TODO Custom JSON Bind & Serialize
 
 	if !cfg.Production {
 		slog.Debug("Using cors")
 		e.Use(middleware.CORS())
 	}
 
-	srv := services.New()
+	st := db.New()
+	repos := repository.New(&st)
+
+	srv := services.New(&repos)
 	api := e.Group("/api")
 
-	controllers.New(ctx, api, &srv)
+	controllers.New(controllers.Dependencies{
+		ctx,
+		api,
+		&srv,
+		cfg,
+	})
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 

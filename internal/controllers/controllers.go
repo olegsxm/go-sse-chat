@@ -3,13 +3,21 @@ package controllers
 import (
 	"context"
 	"github.com/labstack/echo/v4"
+	"github.com/olegsxm/go-sse-chat.git/internal/config"
 	services "github.com/olegsxm/go-sse-chat.git/internal/services"
 )
 
-var srv *services.Services
+var dependencies Dependencies
 
-func New(ctx context.Context, router *echo.Group, s *services.Services) {
-	srv = s
-	v1 := router.Group("/v1")
+type Dependencies struct {
+	Ctx      context.Context
+	Router   *echo.Group
+	Services *services.Services
+	Config   *config.AppConfig
+}
+
+func New(deps Dependencies) {
+	dependencies = deps
+	v1 := dependencies.Router.Group("/v1")
 	authHandlers(v1)
 }
