@@ -6,24 +6,18 @@ import (
 
 type Services struct {
 	auth *AuthService
+	chat *ChatService
 }
 
 func (s *Services) Auth() *AuthService {
 	return s.auth
 }
 
-func (s *Services) Chat() {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *Services) Message() {
-	//TODO implement me
-	panic("implement me")
-}
+func (s *Services) Chat() *ChatService { return s.chat }
 
 func New(r *repository.Repository) Services {
 	return Services{
 		auth: newAuthService(r),
+		chat: newChatService(r),
 	}
 }

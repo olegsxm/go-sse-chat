@@ -6,22 +6,22 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type JwtUserClaims struct {
+type UserClaims struct {
 	ID    int64  `json:"id"`
 	Login string `json:"login"`
 	jwt.RegisteredClaims
 }
 
-func EchoJwtConfig(secret string) echojwt.Config {
+func NewEchoJwtConfig(secret string) echojwt.Config {
 	return echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(JwtUserClaims)
+			return new(UserClaims)
 		},
 		SigningKey: []byte(secret),
 	}
 }
 
-func CreateToken(claims *JwtUserClaims, secret string) (string, error) {
+func CreateToken(claims *UserClaims, secret string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(secret))
 

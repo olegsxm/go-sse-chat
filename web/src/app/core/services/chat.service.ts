@@ -9,7 +9,7 @@ export class ChatService {
     constructor(private http: HttpClient) {
     }
 
-    getDialog(): Observable<IConversation[]> {
-        return this.http.get<IConversation[]>('/chat/dialogs');
+    getConversation(): Observable<IConversation[]> {
+        return this.http.get<IConversation[]>('/chat/conversations');
     }
 }

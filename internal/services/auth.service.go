@@ -2,9 +2,10 @@ package services
 
 import (
 	"errors"
+	"log/slog"
+
 	"github.com/olegsxm/go-sse-chat.git/internal/models"
 	"github.com/olegsxm/go-sse-chat.git/internal/repository"
-	"log/slog"
 )
 
 type AuthService struct {
@@ -36,7 +37,7 @@ func (s *AuthService) SignUp(login, password string) (models.User, error) {
 		return models.User{}, err
 	}
 
-	id, err := s.repository.Auth().CreateUser(login, password)
+	id, err := s.repository.Auth().CreateUser(login, user.Password)
 	if err != nil {
 		return models.User{}, err
 	}

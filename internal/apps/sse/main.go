@@ -2,6 +2,10 @@ package sse
 
 import (
 	"context"
+	"log/slog"
+	"net/http"
+	"time"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/olegsxm/go-sse-chat.git/internal/controllers"
@@ -9,9 +13,6 @@ import (
 	"github.com/olegsxm/go-sse-chat.git/internal/repository"
 	"github.com/olegsxm/go-sse-chat.git/internal/services"
 	echoSwagger "github.com/swaggo/echo-swagger"
-	"log/slog"
-	"net/http"
-	"time"
 
 	"github.com/olegsxm/go-sse-chat.git/internal/config"
 	"golang.org/x/net/http2/h2c"

@@ -2,19 +2,20 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/olegsxm/go-sse-chat.git/pkg/jwt"
-	validate "github.com/olegsxm/go-sse-chat.git/pkg/validator"
 	"log/slog"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
+	jwt "github.com/olegsxm/go-sse-chat.git/pkg/jwt"
+	validate "github.com/olegsxm/go-sse-chat.git/pkg/validator"
 
 	"github.com/olegsxm/go-sse-chat.git/internal/models"
 
 	_ "github.com/go-chi/render"
 )
 
-func authHandlers(g *echo.Group) {
-	slog.Debug("Init auth handlers")
+func authControllers(g *echo.Group) {
+	slog.Debug("Init auth controllers")
 	g.POST("/auth/sign-in", signIn)
 	g.POST("/auth/sign-up", signUp)
 }
@@ -47,7 +48,7 @@ func signIn(ctx echo.Context) error {
 	}
 
 	token, err := jwt.CreateToken(
-		&jwt.JwtUserClaims{ID: user.ID, Login: user.Login},
+		&jwt.UserClaims{ID: user.ID, Login: user.Login},
 		dependencies.Config.JWTSecret,
 	)
 	if err != nil {
@@ -102,7 +103,7 @@ func signUp(ctx echo.Context) error {
 	}
 
 	token, err := jwt.CreateToken(
-		&jwt.JwtUserClaims{ID: u.ID, Login: u.Password},
+		&jwt.UserClaims{ID: u.ID, Login: u.Password},
 		dependencies.Config.JWTSecret,
 	)
 	if err != nil {

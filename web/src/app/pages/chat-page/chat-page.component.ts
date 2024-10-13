@@ -29,7 +29,7 @@ export class ChatPageComponent {
 
 
     constructor(private chatService: ChatService) {
-        chatService.getDialog()
+        this.chatService.getConversation()
             .subscribe(res => {
                 this.store.dispatch(new AddConversationsAction(res))
             })
