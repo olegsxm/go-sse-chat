@@ -31,3 +31,5 @@ func CreateToken(claims *UserClaims, secret string) (string, error) {
 
 	return t, nil
 }
+
+func Parse() {}

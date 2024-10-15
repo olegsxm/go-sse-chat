@@ -54,9 +54,7 @@ export class SearchComponent implements OnInit {
             )
             .subscribe({
                 next: users => this.users.set(users),
-                error: () => {
-                    this.users.set([]);
-                }
+                error: () => this.users.set([])
             })
     }
 

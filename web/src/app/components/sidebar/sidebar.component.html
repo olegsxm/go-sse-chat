@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    <app-search (selectUser)="writeToUser($event)"/>
+    <app-search (selectUser)="writeToUser.emit($event)"/>
 
     <div class="bg-grey-lighter flex-1 overflow-auto">
         <app-contact-list [conversations]="data.dialogs"/>

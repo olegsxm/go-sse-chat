@@ -7,7 +7,6 @@ import {apiInterceptor} from "./core/interceptors/api.interceptor";
 import {authInterceptor} from "./core/interceptors/auth.interceptor";
 import {AuthState} from "./state/auth/auth.state";
 import {withNgxsReduxDevtoolsPlugin} from "@ngxs/devtools-plugin";
-import {withNgxsLoggerPlugin} from "@ngxs/logger-plugin";
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -16,7 +15,6 @@ export const appConfig: ApplicationConfig = {
         provideRouter(appRoutes, withComponentInputBinding()),
         provideStore(
             [AuthState],
-            withNgxsLoggerPlugin(),
             withNgxsReduxDevtoolsPlugin()
         ),
     ],
