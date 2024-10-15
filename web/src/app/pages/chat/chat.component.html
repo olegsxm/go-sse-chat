@@ -1,5 +1,7 @@
-<app-chat-header class="block bg-white"/>
+<div (clickOutside)="focused = false" (click)="focused = true">
+    <app-chat-header class="block bg-white"/>
+    <app-chat-messages class="flex flex-1 overflow-auto"/>
+    <app-chat-message-field class="block bg-white"/>
+</div>
 
-<app-chat-messages class="flex flex-1 overflow-auto"/>
 
-<app-chat-message-field class="block bg-white"/>

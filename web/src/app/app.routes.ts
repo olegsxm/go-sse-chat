@@ -39,7 +39,7 @@ export const appRoutes: Route[] = [
                     },
                     {
                         path: ':conversation',
-                        loadComponent: () => import('./pages/chat/chat.component').then(c => c.ChatComponent)
+                        loadComponent: () => import('./pages/chat/chat.component').then(c => c.ChatComponent),
                     }
                 ]
             }

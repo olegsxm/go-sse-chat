@@ -10,10 +10,8 @@
         </div>
     </div>
 
-    <!-- Search -->
-    <app-search/>
+    <app-search (selectUser)="writeToUser($event)"/>
 
-    <!-- Contacts -->
     <div class="bg-grey-lighter flex-1 overflow-auto">
         <app-contact-list [conversations]="data.dialogs"/>
     </div>

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/olegsxm/go-sse-chat.git/pkg/jwt"
 
@@ -26,6 +27,8 @@ func New(deps Dependencies) {
 	protectMiddleware = echojwt.WithConfig(jwt.NewEchoJwtConfig(dependencies.Config.JWTSecret))
 
 	v1 := dependencies.Router.Group("/v1")
+
 	authControllers(v1)
 	chatControllers(v1)
+	usersControllers(v1)
 }

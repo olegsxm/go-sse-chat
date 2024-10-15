@@ -4,6 +4,7 @@ import {ChatMessagesComponent} from "../../components/chat-messages/chat-message
 import {ChatMessageFieldComponent} from "../../components/chat-message-field/chat-message-field.component";
 import {Router} from "@angular/router";
 import {ChatService} from "../../core/services/chat.service";
+import {ClickOutsideDirective} from "../../core/directives/click-outside.directive";
 
 @Component({
     selector: 'app-chat',
@@ -11,7 +12,8 @@ import {ChatService} from "../../core/services/chat.service";
     imports: [
         ChatHeaderComponent,
         ChatMessagesComponent,
-        ChatMessageFieldComponent
+        ChatMessageFieldComponent,
+        ClickOutsideDirective
     ],
     templateUrl: './chat.component.html',
     styleUrl: './chat.component.scss',
@@ -20,11 +22,14 @@ import {ChatService} from "../../core/services/chat.service";
 export class ChatComponent implements OnChanges {
     @Input() conversation: number | null = null;
 
+    focused = true;
+
     @HostListener('window:keyup.escape')
     exit() {
+        if (!this.focused) return;
+
         this.router.navigate(['/']);
     }
-
 
     constructor(
         private router: Router,
@@ -35,6 +40,7 @@ export class ChatComponent implements OnChanges {
 
 
     ngOnChanges() {
+        this.focused = true;
         console.log(this.conversation);
     }
 }

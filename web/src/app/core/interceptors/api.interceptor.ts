@@ -4,14 +4,12 @@ import {of} from "rxjs";
 import {IConversation} from "../models/conversation.model";
 
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
-    console.log("API interceptor called");
-
     if (req.url.includes("/auth")) {
         const {login} = req.body as { login: string }
         return of(new HttpResponse({status: 200, body: {token: '4343434223 token', user: {id: 1, login: login}}}));
     }
 
-    if (req.url.includes("dialogs")) {
+    if (req.url.includes("conversations")) {
         const mocks: IConversation[] = [
             {
                 "id": 78785,

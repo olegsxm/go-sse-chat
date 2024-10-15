@@ -7,8 +7,9 @@ type Storage interface {
 }
 
 type Repository struct {
-	authRepository *AuthRepository
-	chatRepository *ChatRepository
+	authRepository  *AuthRepository
+	chatRepository  *ChatRepository
+	usersRepository *UsersRepository
 }
 
 func (r *Repository) Auth() *AuthRepository {
@@ -17,13 +18,17 @@ func (r *Repository) Auth() *AuthRepository {
 func (r *Repository) Chat() *ChatRepository {
 	return r.chatRepository
 }
+func (r *Repository) Users() *UsersRepository {
+	return r.usersRepository
+}
 
 var st Storage
 
 func New(storage Storage) Repository {
 	st = storage
 	return Repository{
-		authRepository: &AuthRepository{},
-		chatRepository: &ChatRepository{},
+		authRepository:  &AuthRepository{},
+		chatRepository:  &ChatRepository{},
+		usersRepository: &UsersRepository{},
 	}
 }

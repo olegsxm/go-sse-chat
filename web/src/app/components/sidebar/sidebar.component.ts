@@ -5,6 +5,7 @@ import {ContactListComponent} from "../contact-list/contact-list.component";
 import {AvatarComponent} from "../avatar/avatar.component";
 import {IConversation} from "../../core/models/conversation.model";
 import {IUser} from "../../core/models/user.model";
+import {Router} from "@angular/router";
 
 export interface ISidebarData {
     user: IUser | null;
@@ -21,4 +22,11 @@ export interface ISidebarData {
 })
 export class SidebarComponent {
     @Input({required: true}) data!: ISidebarData;
+
+    constructor(private router: Router) {
+    }
+
+    writeToUser(user: IUser) {
+        this.router.navigate(['./', 0]);
+    }
 }

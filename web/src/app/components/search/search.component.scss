@@ -1,0 +1,13 @@
+:host {
+  @apply block relative;
+}
+
+.users {
+  @apply absolute bg-white w-11/12 border border-gray-300 shadow-lg;
+  @apply left-1/2 -translate-x-1/2;
+}
+
+.user {
+  @apply px-3 py-2 text-center text-xl cursor-pointer;
+  @apply hover:bg-gray-300;
+}

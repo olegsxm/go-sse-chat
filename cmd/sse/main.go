@@ -2,38 +2,65 @@ package main
 
 import (
 	"context"
-	_ "github.com/olegsxm/go-sse-chat.git/docs"
-	"github.com/olegsxm/go-sse-chat.git/internal/apps/sse"
-	_ "github.com/olegsxm/go-sse-chat.git/pkg/logger"
+	"errors"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	_ "github.com/olegsxm/go-sse-chat.git/docs"
+	"github.com/olegsxm/go-sse-chat.git/internal/apps/sse"
+	"github.com/olegsxm/go-sse-chat.git/internal/config"
+	_ "github.com/olegsxm/go-sse-chat.git/pkg/logger"
 )
 
 //	@title		Chat API
 //	@version	1.0
 //
-// @host localhost:443
+// @host localhost:3000
 // @BasePath  /api/v1
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	server := sse.New(ctx)
+	cfg, err := config.New()
+
+	if err != nil || cfg == nil {
+		slog.Error("Error loading config")
+		panic(err)
+	}
+
+	server := sse.New(ctx, cfg)
 	// Start server
 	go func() {
-		if err := server.ListenAndServeTLS("cert.pem", "key.pem"); err != nil && err != http.ErrServerClosed {
+		var err error
+
+		if cfg.Production {
+			err = runProdServer(server)
+		} else {
+			err = runDevServer(server)
+		}
+
+		if err = server.ListenAndServeTLS("cert.pem", "key.pem"); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("shutting down the server")
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
 	<-ctx.Done()
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	c, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(c); err != nil {
 		slog.Error(err.Error())
 	}
+}
+
+func runProdServer(s *http.Server) error {
+	return s.ListenAndServeTLS("cert.pem", "key.pem")
+}
+
+func runDevServer(s *http.Server) error {
+	return s.ListenAndServe()
 }

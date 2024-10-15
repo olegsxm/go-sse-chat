@@ -14,7 +14,8 @@ type AppConfig struct {
 	Production bool   `yaml:"production"`
 	JWTSecret  string `yaml:"jwt_secret"`
 	Server     struct {
-		Address string `yaml:"addr"`
+		Address    string `yaml:"addr"`
+		DevAddress string `yaml:"dev_addr"`
 	} `yaml:"server"`
 
 	Swagger struct {
