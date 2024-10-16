@@ -9,10 +9,10 @@ import (
 
 type UsersRepository struct{}
 
-func (r UsersRepository) FindUsers(query string) ([]models.User, error) {
+func (r UsersRepository) FindUsers(query string, excludedId int64) ([]models.User, error) {
 	users := make([]models.User, 0, 20)
 
-	rows, err := st.Sql().Query(`SELECT id, login FROM users WHERE login LIKE ?`, "%"+query+"%")
+	rows, err := st.Sql().Query(`SELECT id, login FROM users WHERE login LIKE ? AND id != ?`, "%"+query+"%", excludedId)
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {

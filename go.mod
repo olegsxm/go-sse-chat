@@ -3,12 +3,12 @@ module github.com/olegsxm/go-sse-chat.git
 go 1.23.0
 
 require (
+	github.com/MatusOllah/slogcolor v1.4.0
 	github.com/go-chi/render v1.0.3
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/labstack/echo-jwt/v4 v4.2.0
 	github.com/labstack/echo/v4 v4.12.0
-	github.com/mailru/easyjson v0.7.7
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/swaggo/http-swagger/v2 v2.0.2
@@ -22,6 +22,7 @@ require (
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/ajg/form v1.5.1 // indirect
+	github.com/fatih/color v1.16.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -34,6 +35,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect

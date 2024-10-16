@@ -9,8 +9,8 @@ type UsersService struct {
 	r *repository.Repository
 }
 
-func (s *UsersService) FindUsers(query string) ([]models.UserDTO, error) {
-	users, err := s.r.Users().FindUsers(query)
+func (s *UsersService) FindUsers(query string, excludedID int64) ([]models.UserDTO, error) {
+	users, err := s.r.Users().FindUsers(query, excludedID)
 
 	if err != nil {
 		return nil, err

@@ -4,7 +4,10 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
+
+	"github.com/olegsxm/go-sse-chat.git/pkg/cjwt"
 
 	echoSwagger "github.com/swaggo/echo-swagger"
 
@@ -44,6 +47,29 @@ func New(ctx context.Context, cfg *config.AppConfig) *http.Server {
 
 	srv := services.New(&repos)
 	api := e.Group("/api")
+
+	api.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			authToken := c.Request().Header.Get("Authorization")
+
+			if authToken == "" {
+				return next(c)
+			}
+
+			token := strings.TrimPrefix(authToken, "Bearer ")
+
+			claims := cjwt.UserClaims{}
+
+			if e := cjwt.Parse(token, &claims, cfg.JWTSecret); e != nil {
+				slog.Error("Token parse error: ", e.Error())
+				return next(c)
+			}
+
+			c.Set("userClaims", claims)
+
+			return next(c)
+		}
+	})
 
 	controllers.New(controllers.Dependencies{
 		ctx,

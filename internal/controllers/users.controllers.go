@@ -4,6 +4,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/olegsxm/go-sse-chat.git/pkg/cjwt"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -20,7 +22,9 @@ func findUsers(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "no query param")
 	}
 
-	users, err := dependencies.Services.Users().FindUsers(query)
+	ctxUserId := c.Get("userClaims").(cjwt.UserClaims).ID
+
+	users, err := dependencies.Services.Users().FindUsers(query, ctxUserId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

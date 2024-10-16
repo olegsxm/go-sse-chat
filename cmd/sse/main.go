@@ -9,6 +9,8 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/olegsxm/go-sse-chat.git/pkg/logger"
+
 	_ "github.com/olegsxm/go-sse-chat.git/docs"
 	"github.com/olegsxm/go-sse-chat.git/internal/apps/sse"
 	"github.com/olegsxm/go-sse-chat.git/internal/config"
@@ -21,15 +23,16 @@ import (
 // @host localhost:3000
 // @BasePath  /api/v1
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
-
 	cfg, err := config.New()
-
 	if err != nil || cfg == nil {
 		slog.Error("Error loading config")
 		panic(err)
 	}
+
+	logger.Init(cfg.Production)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
 
 	server := sse.New(ctx, cfg)
 	// Start server

@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	jwt "github.com/olegsxm/go-sse-chat.git/pkg/jwt"
+	jwt "github.com/olegsxm/go-sse-chat.git/pkg/cjwt"
 	validate "github.com/olegsxm/go-sse-chat.git/pkg/validator"
 
 	"github.com/olegsxm/go-sse-chat.git/internal/models"

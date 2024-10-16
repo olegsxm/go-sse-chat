@@ -1,4 +1,4 @@
-package jwt
+package cjwt
 
 import (
 	"github.com/golang-jwt/jwt/v5"
@@ -32,4 +32,10 @@ func CreateToken(claims *UserClaims, secret string) (string, error) {
 	return t, nil
 }
 
-func Parse() {}
+func Parse(token string, claims *UserClaims, secret string) error {
+	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secret), nil
+	})
+
+	return err
+}
