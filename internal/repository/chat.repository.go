@@ -81,7 +81,7 @@ func (r ChatRepository) GetConversations() ([]models.ConversationDTO, error) {
 			slog.Error(err.Error())
 		}
 	}
-	rows, e := st.Sql().Query(`select * from conversations`)
+	rows, err := st.Sql().Query(`select * from conversations`)
 
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
@@ -90,14 +90,19 @@ func (r ChatRepository) GetConversations() ([]models.ConversationDTO, error) {
 		}
 	}(rows)
 
-	if e != nil {
-		return nil, e
+	if err != nil {
+		return nil, err
 	}
 
 	for rows.Next() {
 		c := models.Conversation{}
 		rows.Scan(&c.ID, &c.Name)
 		conversations = append(conversations, c.ToDTO())
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
 	}
 
 	return conversations, nil
