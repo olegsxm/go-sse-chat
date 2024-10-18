@@ -23,8 +23,24 @@ func (s *ChatService) CreateConversation(from int64, to int64) (models.Conversat
 	return dto, err
 }
 
-func (s *ChatService) GetConversation() ([]models.ConversationDTO, error) {
-	return s.r.Chat().GetConversations()
+func (s *ChatService) GetConversation(uId int64) ([]models.ConversationDTO, error) {
+	return s.r.Chat().GetConversations(uId)
+}
+
+func (s *ChatService) CreateMessage(message models.Message) (models.Message, error) {
+	id, err := s.r.Chat().CreateMessage(message)
+
+	if err != nil {
+		return message, err
+	}
+
+	message.ID = id
+
+	return message, nil
+}
+
+func (s *ChatService) GetMessages(conversationId int64, forUser int64) ([]models.Message, error) {
+	return s.r.Chat().GetMessages(conversationId, forUser)
 }
 
 func newChatService(r *repository.Repository) *ChatService {

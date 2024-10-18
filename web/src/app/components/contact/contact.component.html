@@ -1,11 +1,11 @@
 <div class="bg-white px-3 flex items-center hover:bg-gray-300 cursor-pointer" (click)="openConversation()">
     <div>
-        <app-avatar [src]="conversation.avatar || conversation.sender?.avatar"/>
+        <app-avatar [src]="conversation.avatar"/>
     </div>
     <div class="ml-4 flex-1 border-b border-grey-lighter py-4">
         <div class="flex items-bottom justify-between">
             <p class="text-grey-darkest font-semibold">
-                {{ conversation.name || conversation.sender?.login }}
+                {{ conversation.name }}
             </p>
             <p class="text-xs text-grey-darkest">
                 {{ conversation.message?.createdAt | date:"MM.dd hh:mm" }}

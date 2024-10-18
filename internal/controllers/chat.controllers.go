@@ -3,6 +3,10 @@ package controllers
 import (
 	"log/slog"
 	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/olegsxm/go-sse-chat.git/pkg/cjwt"
 
 	"github.com/olegsxm/go-sse-chat.git/internal/models"
 
@@ -14,10 +18,14 @@ func chatControllers(g *echo.Group) {
 
 	g.GET("/chat/conversations", getConversations, protectMiddleware)
 	g.POST("/chat/conversations", createConversation, protectMiddleware)
+	g.GET("/chat/conversation/:conversationId/messages", getMessages, protectMiddleware)
+	g.POST("/chat/conversation/:conversationId/create-message", createMessage, protectMiddleware)
 }
 
 func getConversations(c echo.Context) error {
-	cs, e := dependencies.Services.Chat().GetConversation()
+	ctxUserId := c.Get("userClaims").(cjwt.UserClaims).ID
+
+	cs, e := dependencies.Services.Chat().GetConversation(ctxUserId)
 
 	if e != nil {
 		slog.Error(e.Error())
@@ -44,4 +52,49 @@ func createConversation(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, conv)
+}
+
+func createMessage(c echo.Context) error {
+	ctxUser := c.Get("userClaims").(cjwt.UserClaims)
+	conversationId, err := strconv.ParseInt(c.Param("conversationId"), 10, 64)
+
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+
+	message := models.Message{
+		SenderId:       ctxUser.ID,
+		ConversationId: conversationId,
+		CreatedAt:      time.Now(),
+	}
+
+	if err := c.Bind(&message); err != nil {
+		slog.Error(err.Error())
+		return echo.ErrBadRequest
+	}
+
+	m, err := dependencies.Services.Chat().CreateMessage(message)
+	if err != nil {
+		slog.Error(err.Error())
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusOK, m)
+}
+
+func getMessages(c echo.Context) error {
+	ctxUser := c.Get("userClaims").(cjwt.UserClaims)
+	conversationId, err := strconv.ParseInt(c.Param("conversationId"), 10, 64)
+
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+
+	messages, err := dependencies.Services.Chat().GetMessages(conversationId, ctxUser.ID)
+	if err != nil {
+		slog.Error(err.Error())
+		return echo.ErrBadRequest
+	}
+
+	return c.JSON(http.StatusOK, messages)
 }

@@ -1,11 +1,13 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {NgTemplateOutlet} from "@angular/common";
+import {DatePipe, NgTemplateOutlet} from "@angular/common";
+import {IMessage} from "../../core/models/message.model";
 
 @Component({
     selector: 'app-chat-message',
     standalone: true,
     imports: [
-        NgTemplateOutlet
+        NgTemplateOutlet,
+        DatePipe
     ],
     templateUrl: './chat-message.component.html',
     styleUrl: './chat-message.component.scss',
@@ -13,4 +15,9 @@ import {NgTemplateOutlet} from "@angular/common";
 })
 export class ChatMessageComponent {
     @Input() isUserMessage = false
+    @Input() message!: IMessage;
+
+    ngOnInit(): void {
+        console.log(this.message)
+    }
 }

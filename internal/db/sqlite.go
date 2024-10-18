@@ -37,7 +37,7 @@ func initSQLDB(db *sql.DB) {
 
 	createUsersTableSQL := `
 		CREATE TABLE IF NOT EXISTS users (
-			id integer PRIMARY KEY,
+			id INT PRIMARY KEY,
 			login TEXT UNIQUE NOT NULL,
 			password TEXT NOT NULL
 		)
@@ -45,17 +45,17 @@ func initSQLDB(db *sql.DB) {
 
 	createConversationsTableSQL := `
 		CREATE TABLE IF NOT EXISTS conversations (
-		    id integer PRIMARY KEY,
+		    id INT PRIMARY KEY,
 		    name Text DEFAULT NULL,
 		    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		)
+		) 
 	`
 	createMessagesTableSQL := `CREATE TABLE IF NOT EXISTS messages (
-    	id integer,
-    	conversation_id integer not null,
-    	sender_id integer NOT NULL,
+    	id INTEGER primary key autoincrement ,
+    	conversation_id INT not null,
+    	sender_id INT NOT NULL,
     	message TEXT NOT NULL,
-    	read integer default 0,
+    	read INT default 0,
     	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     	FOREIGN KEY (conversation_id) REFERENCES conversations(id),
   		FOREIGN KEY (sender_id) REFERENCES users(id)

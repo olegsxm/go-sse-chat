@@ -10,7 +10,7 @@
             </div>
 
             @for (m of l.messages; track m.id) {
-                <app-chat-message [isUserMessage]="m.sender === undefined"/>
+                <app-chat-message [message]="m" [isUserMessage]="!m.sender"/>
             }
         }
     </div>

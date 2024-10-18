@@ -1,4 +1,13 @@
-import {ChangeDetectionStrategy, Component, DestroyRef, HostListener, Input} from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    DestroyRef,
+    HostListener,
+    Input,
+    OnChanges,
+    OnInit,
+    signal
+} from '@angular/core';
 import {ChatHeaderComponent} from "../../components/chat-header/chat-header.component";
 import {ChatMessagesComponent} from "../../components/chat-messages/chat-messages.component";
 import {ChatMessageFieldComponent} from "../../components/chat-message-field/chat-message-field.component";
@@ -8,8 +17,11 @@ import {ClickOutsideDirective} from "../../core/directives/click-outside.directi
 import {IConversation} from "../../core/models/conversation.model";
 import {Store} from "@ngxs/store";
 import {ChatState} from "../../state/chat/chat.state";
-import {JsonPipe} from "@angular/common";
+import {AsyncPipe, JsonPipe} from "@angular/common";
 import {IMessage, IMessages} from "../../core/models/message.model";
+import {Observable} from 'rxjs';
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+
 
 @Component({
     selector: 'app-chat',
@@ -19,23 +31,19 @@ import {IMessage, IMessages} from "../../core/models/message.model";
         ChatMessagesComponent,
         ChatMessageFieldComponent,
         ClickOutsideDirective,
-        JsonPipe
+        JsonPipe,
+        AsyncPipe
     ],
     templateUrl: './chat.component.html',
     styleUrl: './chat.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ChatComponent {
-    @Input()
-    set conversationId(id: number | null) {
-        if (!id) return
+export class ChatComponent implements OnInit, OnChanges {
+    @Input() conversationId!: number;
 
-        this.conversation = this.store.selectSnapshot(ChatState.getConversation(id)) || null;
-    }
+    conversation$!: Observable<IConversation | undefined>;
 
-    conversation: IConversation | null = null;
-
-    messages: IMessages[] = [];
+    messages = signal<IMessages[]>([]);
 
     @HostListener('window:keyup.escape')
     exit() {
@@ -53,9 +61,42 @@ export class ChatComponent {
     ) {
     }
 
-    createMessage(msg: string) {
-        const message: IMessage = {
-            message: msg
-        }
+    ngOnInit() {
+        this.chatService.getMessages(this.conversationId)
+            .subscribe(res => {
+                res.forEach(msg => {
+                    const messages = addMessageToMessageList(this.messages(), msg)
+                    this.messages.set(messages)
+                })
+            })
     }
+
+    ngOnChanges() {
+        this.conversation$ = this.store.select(ChatState.getConversation(this.conversationId))
+            .pipe(takeUntilDestroyed(this.destroyRef))
+    }
+
+    createMessage(msg: string) {
+        if (msg.trim().length < 1) return;
+        
+        this.chatService.sendMessage(this.conversationId, {
+            message: msg,
+        }).subscribe(res => {
+            const messages = addMessageToMessageList(this.messages(), res)
+            this.messages.set(messages)
+        })
+    }
+}
+
+function addMessageToMessageList(list: IMessages[], msg: IMessage): IMessages[] {
+    const date = new Date(msg.createdAt as string).toJSON().substring(0, 10);
+    const messages = [...list]
+    const mIndex = messages.findIndex(m => m.date === date)
+    if (mIndex === -1) {
+        messages.push({date: date, messages: [msg]})
+    } else {
+        messages[mIndex].messages.push(msg)
+    }
+
+    return messages
 }

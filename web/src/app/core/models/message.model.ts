@@ -8,7 +8,6 @@ export interface IMessage {
 }
 
 export interface IMessages {
-    date: Date;
+    date: string;
     messages: IMessage[];
 }
-
