@@ -15,6 +15,7 @@ export const appConfig: ApplicationConfig = {
         provideRouter(appRoutes, withComponentInputBinding()),
         provideStore(
             [AuthState],
+            // withNgxsLoggerPlugin(),
             withNgxsReduxDevtoolsPlugin()
         ),
     ],

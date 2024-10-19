@@ -1,4 +1,4 @@
-package sse
+package sse_app
 
 import (
 	"context"
@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/olegsxm/go-sse-chat.git/pkg/sse"
 
 	"github.com/olegsxm/go-sse-chat.git/pkg/cjwt"
 
@@ -48,6 +50,13 @@ func New(ctx context.Context, cfg *config.AppConfig) *http.Server {
 	srv := services.New(&repos)
 	api := e.Group("/api")
 
+	broker := sse.NewBroker[any]()
+
+	api.GET("/sse", func(c echo.Context) error {
+		id := c.QueryParam("userId")
+		return broker.Stream(strings.TrimSpace(id), c.Response().Writer, *c.Request())
+	})
+
 	api.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			authToken := c.Request().Header.Get("Authorization")
@@ -76,6 +85,7 @@ func New(ctx context.Context, cfg *config.AppConfig) *http.Server {
 		api,
 		&srv,
 		cfg,
+		broker,
 	})
 
 	addr := cfg.Server.DevAddress
@@ -90,5 +100,9 @@ func New(ctx context.Context, cfg *config.AppConfig) *http.Server {
 	}
 
 	return server
+
+}
+
+func InitSSE() {
 
 }

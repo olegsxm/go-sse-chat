@@ -12,7 +12,7 @@ import (
 	"github.com/olegsxm/go-sse-chat.git/pkg/logger"
 
 	_ "github.com/olegsxm/go-sse-chat.git/docs"
-	"github.com/olegsxm/go-sse-chat.git/internal/apps/sse"
+	"github.com/olegsxm/go-sse-chat.git/internal/apps/sse_app"
 	"github.com/olegsxm/go-sse-chat.git/internal/config"
 	_ "github.com/olegsxm/go-sse-chat.git/pkg/logger"
 )
@@ -34,7 +34,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	server := sse.New(ctx, cfg)
+	server := sse_app.New(ctx, cfg)
 	// Start server
 	go func() {
 		var err error

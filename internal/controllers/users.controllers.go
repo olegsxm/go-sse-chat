@@ -10,7 +10,7 @@ import (
 )
 
 func usersControllers(g *echo.Group) {
-	slog.Debug("Init users controllers")
+	slog.Info("Init users controllers")
 
 	g.GET("/users/find", findUsers)
 }

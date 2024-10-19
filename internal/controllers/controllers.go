@@ -3,6 +3,8 @@ package controllers
 import (
 	"context"
 
+	"github.com/olegsxm/go-sse-chat.git/pkg/sse"
+
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/olegsxm/go-sse-chat.git/pkg/cjwt"
 
@@ -20,6 +22,7 @@ type Dependencies struct {
 	Router   *echo.Group
 	Services *services.Services
 	Config   *config.AppConfig
+	Broker   *sse.Broker[any]
 }
 
 func New(deps Dependencies) {

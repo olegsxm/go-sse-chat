@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/olegsxm/go-sse-chat.git/pkg/cjwt"
@@ -14,12 +15,13 @@ import (
 )
 
 func chatControllers(g *echo.Group) {
-	slog.Debug("Init chat controllers")
+	slog.Info("Init chat controllers")
 
 	g.GET("/chat/conversations", getConversations, protectMiddleware)
 	g.POST("/chat/conversations", createConversation, protectMiddleware)
 	g.GET("/chat/conversation/:conversationId/messages", getMessages, protectMiddleware)
 	g.POST("/chat/conversation/:conversationId/create-message", createMessage, protectMiddleware)
+
 }
 
 func getConversations(c echo.Context) error {
@@ -73,10 +75,36 @@ func createMessage(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	m, err := dependencies.Services.Chat().CreateMessage(message)
-	if err != nil {
-		slog.Error(err.Error())
-		return echo.ErrInternalServerError
+	var wg sync.WaitGroup
+
+	var m models.Message
+	var participantsIDS []int64
+
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		m, err = dependencies.Services.Chat().CreateMessage(message)
+		if err != nil {
+			slog.Error(err.Error())
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		participantsIDS, err = dependencies.Services.Chat().GetConversationsParticipantsIDS(message.ConversationId, ctxUser.ID)
+		if err != nil {
+			slog.Error(err.Error())
+		}
+	}()
+
+	wg.Wait()
+
+	for _, id := range participantsIDS {
+		m.Sender = &models.UserDTO{
+			ID:    ctxUser.ID,
+			Login: ctxUser.Login,
+		}
+		dependencies.Broker.SendMessage(strconv.FormatInt(id, 10), m)
 	}
 
 	return c.JSON(http.StatusOK, m)

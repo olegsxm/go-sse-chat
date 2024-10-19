@@ -5,6 +5,8 @@ export interface IMessage {
     message: string;
     createdAt?: string | Date;
     sender?: IUser;
+    conversation?: number;
+    senderId?: number;
 }
 
 export interface IMessages {

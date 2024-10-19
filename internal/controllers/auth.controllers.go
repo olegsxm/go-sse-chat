@@ -15,7 +15,7 @@ import (
 )
 
 func authControllers(g *echo.Group) {
-	slog.Debug("Init auth controllers")
+	slog.Info("Init auth controllers")
 	g.POST("/auth/sign-in", signIn)
 	g.POST("/auth/sign-up", signUp)
 }

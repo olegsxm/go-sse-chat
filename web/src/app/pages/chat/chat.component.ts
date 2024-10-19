@@ -15,12 +15,18 @@ import {Router} from "@angular/router";
 import {ChatService} from "../../core/services/chat.service";
 import {ClickOutsideDirective} from "../../core/directives/click-outside.directive";
 import {IConversation} from "../../core/models/conversation.model";
-import {Store} from "@ngxs/store";
+import {Actions, ofActionDispatched, Store} from "@ngxs/store";
 import {ChatState} from "../../state/chat/chat.state";
 import {AsyncPipe, JsonPipe} from "@angular/common";
 import {IMessage, IMessages} from "../../core/models/message.model";
-import {Observable} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {
+    AddConversationsAction,
+    AddNewMessageToQueueAction,
+    RemoveMessageFromQueueAction,
+    UpdateLastConversationMessage
+} from "../../state/chat/chat.actions";
 
 
 @Component({
@@ -57,13 +63,38 @@ export class ChatComponent implements OnInit, OnChanges {
         private router: Router,
         private chatService: ChatService,
         private destroyRef: DestroyRef,
-        private store: Store
+        private store: Store,
+        private actions$: Actions
     ) {
     }
 
     ngOnInit() {
+        this.actions$.pipe(
+            ofActionDispatched(AddNewMessageToQueueAction),
+            map(action => action.payload),
+            takeUntilDestroyed(this.destroyRef),
+        ).subscribe({
+            next: message => {
+                if (message.conversation === +this.conversationId) {
+                    const messages = addMessageToMessageList(this.messages(), message)
+                    this.messages.set(messages);
+                    this.store.dispatch(new RemoveMessageFromQueueAction(message.id as number));
+                    return
+                }
+
+                this.updateConversations()
+            }
+        })
+    }
+
+
+    ngOnChanges() {
+        this.conversation$ = this.store.select(ChatState.getConversation(this.conversationId))
+            .pipe(takeUntilDestroyed(this.destroyRef))
+
         this.chatService.getMessages(this.conversationId)
             .subscribe(res => {
+                this.messages.set([]);
                 res.forEach(msg => {
                     const messages = addMessageToMessageList(this.messages(), msg)
                     this.messages.set(messages)
@@ -71,20 +102,25 @@ export class ChatComponent implements OnInit, OnChanges {
             })
     }
 
-    ngOnChanges() {
-        this.conversation$ = this.store.select(ChatState.getConversation(this.conversationId))
-            .pipe(takeUntilDestroyed(this.destroyRef))
-    }
-
     createMessage(msg: string) {
         if (msg.trim().length < 1) return;
-        
+
         this.chatService.sendMessage(this.conversationId, {
             message: msg,
         }).subscribe(res => {
             const messages = addMessageToMessageList(this.messages(), res)
-            this.messages.set(messages)
+            this.messages.set(messages);
+            this.store.dispatch(new UpdateLastConversationMessage({msg: res, conversationId: +this.conversationId}))
         })
+    }
+
+    private updateConversations() {
+        this.chatService.getConversation()
+            .subscribe(res => {
+                if (res && res.length) {
+                    this.store.dispatch(new AddConversationsAction(res))
+                }
+            })
     }
 }
 

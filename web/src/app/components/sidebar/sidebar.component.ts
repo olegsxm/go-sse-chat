@@ -22,7 +22,9 @@ export interface ISidebarData {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidebarComponent {
-    @Input({required: true}) data!: ISidebarData;
+    @Input({required: true}) user: IUser | null = null;
+    @Input() conversations: IConversation[] = [];
+
     @Output() writeToUser = new EventEmitter<IUser>();
 
     constructor(private router: Router, private store: Store) {

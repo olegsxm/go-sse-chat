@@ -27,6 +27,10 @@ func (s *ChatService) GetConversation(uId int64) ([]models.ConversationDTO, erro
 	return s.r.Chat().GetConversations(uId)
 }
 
+func (s *ChatService) GetConversationsParticipantsIDS(convID int64, excludeID int64) ([]int64, error) {
+	return s.r.Chat().GetConversationsParticipants(convID, excludeID)
+}
+
 func (s *ChatService) CreateMessage(message models.Message) (models.Message, error) {
 	id, err := s.r.Chat().CreateMessage(message)
 

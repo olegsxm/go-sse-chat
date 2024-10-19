@@ -33,7 +33,7 @@ func newSqliteConnection() *sql.DB {
 }
 
 func initSQLDB(db *sql.DB) {
-	slog.Debug("Creating new sqlite db file")
+	slog.Info("Creating new sqlite db file")
 
 	createUsersTableSQL := `
 		CREATE TABLE IF NOT EXISTS users (

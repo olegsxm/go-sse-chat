@@ -16,8 +16,4 @@ import {IMessage} from "../../core/models/message.model";
 export class ChatMessageComponent {
     @Input() isUserMessage = false
     @Input() message!: IMessage;
-
-    ngOnInit(): void {
-        console.log(this.message)
-    }
 }

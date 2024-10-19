@@ -109,7 +109,7 @@ func (r ChatRepository) GetConversations(uId int64) ([]models.ConversationDTO, e
 
 		var message = models.Message{}
 
-		mRow := tx.QueryRow(`select id, message, sender_id, conversation_id, created_at from messages where conversation_id = ? order by created_at limit 1`, dto.ID)
+		mRow := tx.QueryRow(`select id, message, sender_id, conversation_id, created_at from messages where conversation_id = ? order by created_at DESC limit 1`, dto.ID)
 		err = mRow.Scan(&message.ID, &message.Message, &message.SenderId, &message.ConversationId, &message.CreatedAt)
 		if err != nil {
 			if !errors.Is(err, sql.ErrNoRows) {
@@ -158,7 +158,6 @@ func (r ChatRepository) CreateMessage(message models.Message) (int64, error) {
 	if e != nil {
 		slog.Error(e.Error())
 	}
-
 	id, e := res.LastInsertId()
 	if e != nil {
 		slog.Error(e.Error())
@@ -213,4 +212,22 @@ func (r ChatRepository) GetMessages(id int64, user int64) ([]models.Message, err
 	_ = tx.Commit()
 
 	return messages, nil
+}
+
+func (r ChatRepository) GetConversationsParticipants(id int64, excludeID int64) ([]int64, error) {
+	ids := make([]int64, 0, 2)
+	rows, err := st.Sql().Query("select user_id from conversation_participants where conversation_id = ? and user_id != ?", id, excludeID)
+	defer rows.Close()
+	if err != nil {
+		slog.Error(err.Error())
+		return ids, err
+	}
+
+	for rows.Next() {
+		var id int64
+		_ = rows.Scan(&id)
+		ids = append(ids, id)
+	}
+
+	return ids, nil
 }
