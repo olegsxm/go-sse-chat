@@ -1,5 +1,7 @@
-<app-chat-header class="block bg-white"/>
-
-<app-chat-messages class="flex flex-1 overflow-auto"/>
-
-<app-chat-message-field class="block bg-white"/>
+<div class="h-full flex flex-col">
+    <app-chat-header class="block bg-white"
+                     [name]="(conversation$ | async )?.name  || 'FAil'"
+                     [avatar]="(conversation$ | async )?.avatar"/>
+    <app-chat-messages class="flex flex-1 overflow-auto" [messages]="messages()"/>
+    <app-chat-message-field class="block bg-white" (send)="createMessage($event)"/>
+</div>

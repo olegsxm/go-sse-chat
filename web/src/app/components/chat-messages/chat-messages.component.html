@@ -1,150 +1,17 @@
 <div class="flex-1 h-full overflow-y-auto" style="background-color: #DAD3CC">
-    <div class="py-2 px-3">
-
-        <div class="flex justify-center mb-2">
-            <div class="rounded py-2 px-4" style="background-color: #DDECF2">
-                <p class="text-sm uppercase">
-                    February 20, 2018
-                </p>
+    <div class="py-2 px-3" #messagesViewBox>
+        @for (l of messages; track l.date) {
+            <div class="flex justify-center mb-2 mt-10">
+                <div class="rounded py-2 px-4" style="background-color: #DDECF2">
+                    <p class="text-sm uppercase">
+                        {{ l.date | date: "MMMM dd yyyy" }}
+                    </p>
+                </div>
             </div>
-        </div>
 
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-        <app-chat-message [isUserMessage]="true"/>
-        <app-chat-message/>
-        <app-chat-message/>
-
+            @for (m of l.messages; track m.id) {
+                <app-chat-message [message]="m" [isUserMessage]="owner.user?.id === m.senderId"/>
+            }
+        }
     </div>
 </div>

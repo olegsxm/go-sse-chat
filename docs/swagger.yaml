@@ -1,0 +1,55 @@
+basePath: /api/v1
+definitions:
+  models.AuthRequest:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+host: localhost:443
+info:
+  contact: {}
+  title: Chat API
+  version: "1.0"
+paths:
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Login in Chat
+      parameters:
+      - description: Login Request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.AuthRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Login at chat
+      tags:
+      - Auth
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: SignUp in Chat
+      parameters:
+      - description: Login Request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.AuthRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Register at chat
+      tags:
+      - Auth
+swagger: "2.0"

@@ -1,3 +1,4 @@
 export const environment = {
-    api: 'http://localhost:3000/api',
+    api: 'https://localhost:443/api/v1',
+    broker: 'ws'
 };

@@ -2,20 +2,18 @@
     <!-- Header -->
     <div class="py-2 px-3 bg-grey-lighter flex flex-row justify-between items-center">
         <div class="flex gap-3 items-center">
-            <app-avatar [src]="data.user?.avatar"/>
+            <app-avatar [src]="user?.avatar"/>
 
             <div class="text-gray-800 text-2xl">
-                {{ data.user?.login }}
+                {{ user?.login }}
             </div>
         </div>
     </div>
 
-    <!-- Search -->
-    <app-search/>
+    <app-search (selectUser)="writeToUser.emit($event)"/>
 
-    <!-- Contacts -->
     <div class="bg-grey-lighter flex-1 overflow-auto">
-        <app-contact-list [conversations]="data.dialogs"/>
+        <app-contact-list [conversations]="conversations"/>
     </div>
 
 </div>

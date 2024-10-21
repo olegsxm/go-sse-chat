@@ -3,50 +3,67 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
-	"syscall"
 	"time"
 
-	"github.com/olegsxm/go-sse-chat.git/internal/apps/sse"
+	"github.com/olegsxm/go-sse-chat.git/pkg/logger"
 
+	_ "github.com/olegsxm/go-sse-chat.git/docs"
+	"github.com/olegsxm/go-sse-chat.git/internal/apps/sse_app"
+	"github.com/olegsxm/go-sse-chat.git/internal/config"
 	_ "github.com/olegsxm/go-sse-chat.git/pkg/logger"
 )
 
+//	@title		Chat API
+//	@version	1.0
+//
+// @host localhost:3000
+// @BasePath  /api/v1
 func main() {
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
-	serverCtx, serverStopCtx := context.WithCancel(context.Background())
-
-	server := sse.Run(serverCtx)
-
-	go func() {
-		<-sig
-
-		// Shutdown signal with grace period of 30 seconds
-		shutdownCtx, _ := context.WithTimeout(serverCtx, 30*time.Second)
-
-		go func() {
-			<-shutdownCtx.Done()
-			if shutdownCtx.Err() == context.DeadlineExceeded {
-				log.Fatal("graceful shutdown timed out.. forcing exit.")
-			}
-		}()
-
-		// Trigger graceful shutdown
-		err := server.Shutdown(shutdownCtx)
-		if err != nil {
-			log.Fatal(err)
-		}
-		serverStopCtx()
-	}()
-
-	if err := server.ListenAndServeTLS("server.crt", "server.key"); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	cfg, err := config.New()
+	if err != nil || cfg == nil {
+		slog.Error("Error loading config")
 		panic(err)
 	}
 
-	<-serverCtx.Done()
+	logger.Init(cfg.Production)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	server := sse_app.New(ctx, cfg)
+	// Start server
+	go func() {
+		var err error
+
+		if cfg.Production {
+			err = runProdServer(server)
+		} else {
+			err = runDevServer(server)
+		}
+
+		if err = server.ListenAndServeTLS("cert.pem", "key.pem"); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("shutting down the server")
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
+	<-ctx.Done()
+
+	c, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := server.Shutdown(c); err != nil {
+		slog.Error(err.Error())
+	}
+}
+
+func runProdServer(s *http.Server) error {
+	return s.ListenAndServeTLS("cert.pem", "key.pem")
+}
+
+func runDevServer(s *http.Server) error {
+	return s.ListenAndServe()
 }
