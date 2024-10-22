@@ -1,9 +1,0 @@
-production: false
-jwt_secret: "jwt_secret_key"
-
-server:
-  addr: ":443"
-  dev_addr: ":3000"
-
-swagger:
-  url: "https://localhost:443/swagger/doc.json"

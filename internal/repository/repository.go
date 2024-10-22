@@ -1,34 +1,29 @@
 package repository
 
-import "database/sql"
-
-type Storage interface {
-	Sql() *sql.DB
-}
+import (
+	"github.com/olegsxm/go-sse-chat/internal/db"
+)
 
 type Repository struct {
-	authRepository  *AuthRepository
-	chatRepository  *ChatRepository
-	usersRepository *UsersRepository
+	auth *UserRepository
+	conv *ConversationRepository
 }
 
-func (r *Repository) Auth() *AuthRepository {
-	return r.authRepository
-}
-func (r *Repository) Chat() *ChatRepository {
-	return r.chatRepository
-}
-func (r *Repository) Users() *UsersRepository {
-	return r.usersRepository
+func (r *Repository) Auth() *UserRepository {
+	return r.auth
 }
 
-var st Storage
+func (r *Repository) Conversations() *ConversationRepository {
+	return r.conv
+}
 
-func New(storage Storage) Repository {
-	st = storage
-	return Repository{
-		authRepository:  &AuthRepository{},
-		chatRepository:  &ChatRepository{},
-		usersRepository: &UsersRepository{},
+func New(d *db.Db) *Repository {
+	return &Repository{
+		auth: &UserRepository{
+			db: d.SQL(),
+		},
+		conv: &ConversationRepository{
+			db: d.SQL(),
+		},
 	}
 }

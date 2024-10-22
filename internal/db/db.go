@@ -1,17 +1,19 @@
 package db
 
-import "database/sql"
+import (
+	"github.com/olegsxm/go-sse-chat/ent"
+)
 
-type DB struct {
-	sql *sql.DB
+type Db struct {
+	sql *ent.Client
 }
 
-func (d *DB) Sql() *sql.DB {
+func (d *Db) SQL() *ent.Client {
 	return d.sql
 }
 
-func New() DB {
-	return DB{
-		sql: newSqliteConnection(),
+func NewDB() *Db {
+	return &Db{
+		sql: newSqlClient(),
 	}
 }
