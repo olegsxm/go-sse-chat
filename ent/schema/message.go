@@ -26,6 +26,7 @@ func (Message) Fields() []ent.Field {
 // Edges of the Message.
 func (Message) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("conversation", Conversation.Type),
+		edge.To("conversation", Conversation.Type).Unique(),
+		edge.To("user", User.Type).Unique(),
 	}
 }

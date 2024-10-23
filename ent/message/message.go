@@ -23,13 +23,24 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeConversation holds the string denoting the conversation edge name in mutations.
 	EdgeConversation = "conversation"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// Table holds the table name of the message in the database.
 	Table = "messages"
-	// ConversationTable is the table that holds the conversation relation/edge. The primary key declared below.
-	ConversationTable = "message_conversation"
+	// ConversationTable is the table that holds the conversation relation/edge.
+	ConversationTable = "messages"
 	// ConversationInverseTable is the table name for the Conversation entity.
 	// It exists in this package in order to avoid circular dependency with the "conversation" package.
 	ConversationInverseTable = "conversations"
+	// ConversationColumn is the table column denoting the conversation relation/edge.
+	ConversationColumn = "message_conversation"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "messages"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "message_user"
 )
 
 // Columns holds all SQL columns for message fields.
@@ -40,16 +51,22 @@ var Columns = []string{
 	FieldCreatedAt,
 }
 
-var (
-	// ConversationPrimaryKey and ConversationColumn2 are the table columns denoting the
-	// primary key for the conversation relation (M2M).
-	ConversationPrimaryKey = []string{"message_id", "conversation_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the "messages"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"message_conversation",
+	"message_user",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -90,23 +107,30 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
-// ByConversationCount orders the results by conversation count.
-func ByConversationCount(opts ...sql.OrderTermOption) OrderOption {
+// ByConversationField orders the results by conversation field.
+func ByConversationField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newConversationStep(), opts...)
+		sqlgraph.OrderByNeighborTerms(s, newConversationStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByConversation orders the results by conversation terms.
-func ByConversation(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByUserField orders the results by user field.
+func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newConversationStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newConversationStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ConversationInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, ConversationTable, ConversationPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.M2O, false, ConversationTable, ConversationColumn),
+	)
+}
+func newUserStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 	)
 }

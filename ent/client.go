@@ -350,7 +350,7 @@ func (c *ConversationClient) QueryMessages(co *Conversation) *MessageQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(conversation.Table, conversation.FieldID, id),
 			sqlgraph.To(message.Table, message.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, conversation.MessagesTable, conversation.MessagesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, conversation.MessagesTable, conversation.MessagesColumn),
 		)
 		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
 		return fromV, nil
@@ -499,7 +499,23 @@ func (c *MessageClient) QueryConversation(m *Message) *ConversationQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(message.Table, message.FieldID, id),
 			sqlgraph.To(conversation.Table, conversation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, message.ConversationTable, message.ConversationPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, message.ConversationTable, message.ConversationColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a Message.
+func (c *MessageClient) QueryUser(m *Message) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(message.Table, message.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, message.UserTable, message.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil
@@ -649,6 +665,22 @@ func (c *UserClient) QueryConversations(u *User) *ConversationQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(conversation.Table, conversation.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, user.ConversationsTable, user.ConversationsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMessages queries the messages edge of a User.
+func (c *UserClient) QueryMessages(u *User) *MessageQuery {
+	query := (&MessageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(message.Table, message.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.MessagesTable, user.MessagesColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

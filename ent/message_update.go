@@ -15,6 +15,7 @@ import (
 	"github.com/olegsxm/go-sse-chat/ent/conversation"
 	"github.com/olegsxm/go-sse-chat/ent/message"
 	"github.com/olegsxm/go-sse-chat/ent/predicate"
+	"github.com/olegsxm/go-sse-chat/ent/user"
 )
 
 // MessageUpdate is the builder for updating Message entities.
@@ -72,19 +73,42 @@ func (mu *MessageUpdate) SetNillableCreatedAt(t *time.Time) *MessageUpdate {
 	return mu
 }
 
-// AddConversationIDs adds the "conversation" edge to the Conversation entity by IDs.
-func (mu *MessageUpdate) AddConversationIDs(ids ...uuid.UUID) *MessageUpdate {
-	mu.mutation.AddConversationIDs(ids...)
+// SetConversationID sets the "conversation" edge to the Conversation entity by ID.
+func (mu *MessageUpdate) SetConversationID(id uuid.UUID) *MessageUpdate {
+	mu.mutation.SetConversationID(id)
 	return mu
 }
 
-// AddConversation adds the "conversation" edges to the Conversation entity.
-func (mu *MessageUpdate) AddConversation(c ...*Conversation) *MessageUpdate {
-	ids := make([]uuid.UUID, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// SetNillableConversationID sets the "conversation" edge to the Conversation entity by ID if the given value is not nil.
+func (mu *MessageUpdate) SetNillableConversationID(id *uuid.UUID) *MessageUpdate {
+	if id != nil {
+		mu = mu.SetConversationID(*id)
 	}
-	return mu.AddConversationIDs(ids...)
+	return mu
+}
+
+// SetConversation sets the "conversation" edge to the Conversation entity.
+func (mu *MessageUpdate) SetConversation(c *Conversation) *MessageUpdate {
+	return mu.SetConversationID(c.ID)
+}
+
+// SetUserID sets the "user" edge to the User entity by ID.
+func (mu *MessageUpdate) SetUserID(id uuid.UUID) *MessageUpdate {
+	mu.mutation.SetUserID(id)
+	return mu
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (mu *MessageUpdate) SetNillableUserID(id *uuid.UUID) *MessageUpdate {
+	if id != nil {
+		mu = mu.SetUserID(*id)
+	}
+	return mu
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (mu *MessageUpdate) SetUser(u *User) *MessageUpdate {
+	return mu.SetUserID(u.ID)
 }
 
 // Mutation returns the MessageMutation object of the builder.
@@ -92,25 +116,16 @@ func (mu *MessageUpdate) Mutation() *MessageMutation {
 	return mu.mutation
 }
 
-// ClearConversation clears all "conversation" edges to the Conversation entity.
+// ClearConversation clears the "conversation" edge to the Conversation entity.
 func (mu *MessageUpdate) ClearConversation() *MessageUpdate {
 	mu.mutation.ClearConversation()
 	return mu
 }
 
-// RemoveConversationIDs removes the "conversation" edge to Conversation entities by IDs.
-func (mu *MessageUpdate) RemoveConversationIDs(ids ...uuid.UUID) *MessageUpdate {
-	mu.mutation.RemoveConversationIDs(ids...)
+// ClearUser clears the "user" edge to the User entity.
+func (mu *MessageUpdate) ClearUser() *MessageUpdate {
+	mu.mutation.ClearUser()
 	return mu
-}
-
-// RemoveConversation removes "conversation" edges to Conversation entities.
-func (mu *MessageUpdate) RemoveConversation(c ...*Conversation) *MessageUpdate {
-	ids := make([]uuid.UUID, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return mu.RemoveConversationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -173,10 +188,10 @@ func (mu *MessageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if mu.mutation.ConversationCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   message.ConversationTable,
-			Columns: message.ConversationPrimaryKey,
+			Columns: []string{message.ConversationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(conversation.FieldID, field.TypeUUID),
@@ -184,12 +199,12 @@ func (mu *MessageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := mu.mutation.RemovedConversationIDs(); len(nodes) > 0 && !mu.mutation.ConversationCleared() {
+	if nodes := mu.mutation.ConversationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   message.ConversationTable,
-			Columns: message.ConversationPrimaryKey,
+			Columns: []string{message.ConversationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(conversation.FieldID, field.TypeUUID),
@@ -198,17 +213,30 @@ func (mu *MessageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := mu.mutation.ConversationIDs(); len(nodes) > 0 {
+	if mu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   message.ConversationTable,
-			Columns: message.ConversationPrimaryKey,
+			Table:   message.UserTable,
+			Columns: []string{message.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(conversation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   message.UserTable,
+			Columns: []string{message.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -278,19 +306,42 @@ func (muo *MessageUpdateOne) SetNillableCreatedAt(t *time.Time) *MessageUpdateOn
 	return muo
 }
 
-// AddConversationIDs adds the "conversation" edge to the Conversation entity by IDs.
-func (muo *MessageUpdateOne) AddConversationIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	muo.mutation.AddConversationIDs(ids...)
+// SetConversationID sets the "conversation" edge to the Conversation entity by ID.
+func (muo *MessageUpdateOne) SetConversationID(id uuid.UUID) *MessageUpdateOne {
+	muo.mutation.SetConversationID(id)
 	return muo
 }
 
-// AddConversation adds the "conversation" edges to the Conversation entity.
-func (muo *MessageUpdateOne) AddConversation(c ...*Conversation) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// SetNillableConversationID sets the "conversation" edge to the Conversation entity by ID if the given value is not nil.
+func (muo *MessageUpdateOne) SetNillableConversationID(id *uuid.UUID) *MessageUpdateOne {
+	if id != nil {
+		muo = muo.SetConversationID(*id)
 	}
-	return muo.AddConversationIDs(ids...)
+	return muo
+}
+
+// SetConversation sets the "conversation" edge to the Conversation entity.
+func (muo *MessageUpdateOne) SetConversation(c *Conversation) *MessageUpdateOne {
+	return muo.SetConversationID(c.ID)
+}
+
+// SetUserID sets the "user" edge to the User entity by ID.
+func (muo *MessageUpdateOne) SetUserID(id uuid.UUID) *MessageUpdateOne {
+	muo.mutation.SetUserID(id)
+	return muo
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (muo *MessageUpdateOne) SetNillableUserID(id *uuid.UUID) *MessageUpdateOne {
+	if id != nil {
+		muo = muo.SetUserID(*id)
+	}
+	return muo
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (muo *MessageUpdateOne) SetUser(u *User) *MessageUpdateOne {
+	return muo.SetUserID(u.ID)
 }
 
 // Mutation returns the MessageMutation object of the builder.
@@ -298,25 +349,16 @@ func (muo *MessageUpdateOne) Mutation() *MessageMutation {
 	return muo.mutation
 }
 
-// ClearConversation clears all "conversation" edges to the Conversation entity.
+// ClearConversation clears the "conversation" edge to the Conversation entity.
 func (muo *MessageUpdateOne) ClearConversation() *MessageUpdateOne {
 	muo.mutation.ClearConversation()
 	return muo
 }
 
-// RemoveConversationIDs removes the "conversation" edge to Conversation entities by IDs.
-func (muo *MessageUpdateOne) RemoveConversationIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	muo.mutation.RemoveConversationIDs(ids...)
+// ClearUser clears the "user" edge to the User entity.
+func (muo *MessageUpdateOne) ClearUser() *MessageUpdateOne {
+	muo.mutation.ClearUser()
 	return muo
-}
-
-// RemoveConversation removes "conversation" edges to Conversation entities.
-func (muo *MessageUpdateOne) RemoveConversation(c ...*Conversation) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return muo.RemoveConversationIDs(ids...)
 }
 
 // Where appends a list predicates to the MessageUpdate builder.
@@ -409,10 +451,10 @@ func (muo *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err e
 	}
 	if muo.mutation.ConversationCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   message.ConversationTable,
-			Columns: message.ConversationPrimaryKey,
+			Columns: []string{message.ConversationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(conversation.FieldID, field.TypeUUID),
@@ -420,12 +462,12 @@ func (muo *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := muo.mutation.RemovedConversationIDs(); len(nodes) > 0 && !muo.mutation.ConversationCleared() {
+	if nodes := muo.mutation.ConversationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   message.ConversationTable,
-			Columns: message.ConversationPrimaryKey,
+			Columns: []string{message.ConversationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(conversation.FieldID, field.TypeUUID),
@@ -434,17 +476,30 @@ func (muo *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err e
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := muo.mutation.ConversationIDs(); len(nodes) > 0 {
+	if muo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   message.ConversationTable,
-			Columns: message.ConversationPrimaryKey,
+			Table:   message.UserTable,
+			Columns: []string{message.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(conversation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   message.UserTable,
+			Columns: []string{message.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

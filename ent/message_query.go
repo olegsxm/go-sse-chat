@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -16,6 +15,7 @@ import (
 	"github.com/olegsxm/go-sse-chat/ent/conversation"
 	"github.com/olegsxm/go-sse-chat/ent/message"
 	"github.com/olegsxm/go-sse-chat/ent/predicate"
+	"github.com/olegsxm/go-sse-chat/ent/user"
 )
 
 // MessageQuery is the builder for querying Message entities.
@@ -26,6 +26,8 @@ type MessageQuery struct {
 	inters           []Interceptor
 	predicates       []predicate.Message
 	withConversation *ConversationQuery
+	withUser         *UserQuery
+	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -76,7 +78,29 @@ func (mq *MessageQuery) QueryConversation() *ConversationQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(message.Table, message.FieldID, selector),
 			sqlgraph.To(conversation.Table, conversation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, message.ConversationTable, message.ConversationPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, message.ConversationTable, message.ConversationColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUser chains the current query on the "user" edge.
+func (mq *MessageQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: mq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := mq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(message.Table, message.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, message.UserTable, message.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil
@@ -277,6 +301,7 @@ func (mq *MessageQuery) Clone() *MessageQuery {
 		inters:           append([]Interceptor{}, mq.inters...),
 		predicates:       append([]predicate.Message{}, mq.predicates...),
 		withConversation: mq.withConversation.Clone(),
+		withUser:         mq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  mq.sql.Clone(),
 		path: mq.path,
@@ -291,6 +316,17 @@ func (mq *MessageQuery) WithConversation(opts ...func(*ConversationQuery)) *Mess
 		opt(query)
 	}
 	mq.withConversation = query
+	return mq
+}
+
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (mq *MessageQuery) WithUser(opts ...func(*UserQuery)) *MessageQuery {
+	query := (&UserClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	mq.withUser = query
 	return mq
 }
 
@@ -371,11 +407,19 @@ func (mq *MessageQuery) prepareQuery(ctx context.Context) error {
 func (mq *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Message, error) {
 	var (
 		nodes       = []*Message{}
+		withFKs     = mq.withFKs
 		_spec       = mq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			mq.withConversation != nil,
+			mq.withUser != nil,
 		}
 	)
+	if mq.withConversation != nil || mq.withUser != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, message.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Message).scanValues(nil, columns)
 	}
@@ -395,9 +439,14 @@ func (mq *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 		return nodes, nil
 	}
 	if query := mq.withConversation; query != nil {
-		if err := mq.loadConversation(ctx, query, nodes,
-			func(n *Message) { n.Edges.Conversation = []*Conversation{} },
-			func(n *Message, e *Conversation) { n.Edges.Conversation = append(n.Edges.Conversation, e) }); err != nil {
+		if err := mq.loadConversation(ctx, query, nodes, nil,
+			func(n *Message, e *Conversation) { n.Edges.Conversation = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := mq.withUser; query != nil {
+		if err := mq.loadUser(ctx, query, nodes, nil,
+			func(n *Message, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -405,62 +454,65 @@ func (mq *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 }
 
 func (mq *MessageQuery) loadConversation(ctx context.Context, query *ConversationQuery, nodes []*Message, init func(*Message), assign func(*Message, *Conversation)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Message)
-	nids := make(map[uuid.UUID]map[*Message]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Message)
+	for i := range nodes {
+		if nodes[i].message_conversation == nil {
+			continue
 		}
+		fk := *nodes[i].message_conversation
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(message.ConversationTable)
-		s.Join(joinT).On(s.C(conversation.FieldID), joinT.C(message.ConversationPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(message.ConversationPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(message.ConversationPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
+	if len(ids) == 0 {
+		return nil
 	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*Message]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Conversation](ctx, query, qr, query.inters)
+	query.Where(conversation.IDIn(ids...))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "conversation" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "message_conversation" returned %v`, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (mq *MessageQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Message, init func(*Message), assign func(*Message, *User)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Message)
+	for i := range nodes {
+		if nodes[i].message_user == nil {
+			continue
+		}
+		fk := *nodes[i].message_user
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "message_user" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil

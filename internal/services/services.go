@@ -3,8 +3,9 @@ package services
 import "github.com/olegsxm/go-sse-chat/internal/repository"
 
 type Services struct {
-	auth AuthService
-	conv *ConversationService
+	auth    AuthService
+	conv    *ConversationService
+	message *MessageService
 }
 
 func (s Services) Auth() AuthService {
@@ -15,6 +16,10 @@ func (s *Services) Conversation() *ConversationService {
 	return s.conv
 }
 
+func (s *Services) Message() *MessageService {
+	return s.message
+}
+
 func New(r *repository.Repository) *Services {
 	return &Services{
 		auth: AuthService{
@@ -22,6 +27,9 @@ func New(r *repository.Repository) *Services {
 		},
 		conv: &ConversationService{
 			r: r.Conversations(),
+		},
+		message: &MessageService{
+			r: r.Messages(),
 		},
 	}
 }

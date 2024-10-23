@@ -242,10 +242,10 @@ func (cu *ConversationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if cu.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   conversation.MessagesTable,
-			Columns: conversation.MessagesPrimaryKey,
+			Columns: []string{conversation.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
@@ -255,10 +255,10 @@ func (cu *ConversationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := cu.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !cu.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   conversation.MessagesTable,
-			Columns: conversation.MessagesPrimaryKey,
+			Columns: []string{conversation.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
@@ -271,10 +271,10 @@ func (cu *ConversationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := cu.mutation.MessagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   conversation.MessagesTable,
-			Columns: conversation.MessagesPrimaryKey,
+			Columns: []string{conversation.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
@@ -547,10 +547,10 @@ func (cuo *ConversationUpdateOne) sqlSave(ctx context.Context) (_node *Conversat
 	}
 	if cuo.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   conversation.MessagesTable,
-			Columns: conversation.MessagesPrimaryKey,
+			Columns: []string{conversation.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
@@ -560,10 +560,10 @@ func (cuo *ConversationUpdateOne) sqlSave(ctx context.Context) (_node *Conversat
 	}
 	if nodes := cuo.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !cuo.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   conversation.MessagesTable,
-			Columns: conversation.MessagesPrimaryKey,
+			Columns: []string{conversation.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
@@ -576,10 +576,10 @@ func (cuo *ConversationUpdateOne) sqlSave(ctx context.Context) (_node *Conversat
 	}
 	if nodes := cuo.mutation.MessagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   conversation.MessagesTable,
-			Columns: conversation.MessagesPrimaryKey,
+			Columns: []string{conversation.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),

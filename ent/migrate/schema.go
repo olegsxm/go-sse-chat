@@ -26,12 +26,28 @@ var (
 		{Name: "message", Type: field.TypeString},
 		{Name: "read", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "message_conversation", Type: field.TypeUUID, Nullable: true},
+		{Name: "message_user", Type: field.TypeUUID, Nullable: true},
 	}
 	// MessagesTable holds the schema information for the "messages" table.
 	MessagesTable = &schema.Table{
 		Name:       "messages",
 		Columns:    MessagesColumns,
 		PrimaryKey: []*schema.Column{MessagesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "messages_conversations_conversation",
+				Columns:    []*schema.Column{MessagesColumns[4]},
+				RefColumns: []*schema.Column{ConversationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "messages_users_user",
+				Columns:    []*schema.Column{MessagesColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -71,44 +87,18 @@ var (
 			},
 		},
 	}
-	// MessageConversationColumns holds the columns for the "message_conversation" table.
-	MessageConversationColumns = []*schema.Column{
-		{Name: "message_id", Type: field.TypeUUID},
-		{Name: "conversation_id", Type: field.TypeUUID},
-	}
-	// MessageConversationTable holds the schema information for the "message_conversation" table.
-	MessageConversationTable = &schema.Table{
-		Name:       "message_conversation",
-		Columns:    MessageConversationColumns,
-		PrimaryKey: []*schema.Column{MessageConversationColumns[0], MessageConversationColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "message_conversation_message_id",
-				Columns:    []*schema.Column{MessageConversationColumns[0]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "message_conversation_conversation_id",
-				Columns:    []*schema.Column{MessageConversationColumns[1]},
-				RefColumns: []*schema.Column{ConversationsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ConversationsTable,
 		MessagesTable,
 		UsersTable,
 		ConversationUserTable,
-		MessageConversationTable,
 	}
 )
 
 func init() {
+	MessagesTable.ForeignKeys[0].RefTable = ConversationsTable
+	MessagesTable.ForeignKeys[1].RefTable = UsersTable
 	ConversationUserTable.ForeignKeys[0].RefTable = ConversationsTable
 	ConversationUserTable.ForeignKeys[1].RefTable = UsersTable
-	MessageConversationTable.ForeignKeys[0].RefTable = MessagesTable
-	MessageConversationTable.ForeignKeys[1].RefTable = ConversationsTable
 }

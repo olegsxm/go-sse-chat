@@ -242,7 +242,7 @@ func HasMessages() predicate.Conversation {
 	return predicate.Conversation(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, MessagesTable, MessagesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, MessagesTable, MessagesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

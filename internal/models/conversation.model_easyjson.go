@@ -26,7 +26,7 @@ func easyjsonCe3198c0DecodeGithubComOlegsxmGoSseChatInternalModels(in *jlexer.Le
 		in.Delim('[')
 		if *out == nil {
 			if !in.IsDelim(']') {
-				*out = make(Conversations, 0, 2)
+				*out = make(Conversations, 0, 1)
 			} else {
 				*out = Conversations{}
 			}
@@ -124,6 +124,16 @@ func easyjsonCe3198c0DecodeGithubComOlegsxmGoSseChatInternalModels1(in *jlexer.L
 				}
 				*out.Avatar = string(in.String())
 			}
+		case "message":
+			if in.IsNull() {
+				in.Skip()
+				out.Message = nil
+			} else {
+				if out.Message == nil {
+					out.Message = new(Message)
+				}
+				(*out.Message).UnmarshalEasyJSON(in)
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -159,6 +169,15 @@ func easyjsonCe3198c0EncodeGithubComOlegsxmGoSseChatInternalModels1(out *jwriter
 			out.RawString("null")
 		} else {
 			out.String(string(*in.Avatar))
+		}
+	}
+	{
+		const prefix string = ",\"message\":"
+		out.RawString(prefix)
+		if in.Message == nil {
+			out.RawString("null")
+		} else {
+			(*in.Message).MarshalEasyJSON(out)
 		}
 	}
 	out.RawByte('}')

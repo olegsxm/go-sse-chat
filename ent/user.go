@@ -34,9 +34,11 @@ type User struct {
 type UserEdges struct {
 	// Conversations holds the value of the conversations edge.
 	Conversations []*Conversation `json:"conversations,omitempty"`
+	// Messages holds the value of the messages edge.
+	Messages []*Message `json:"messages,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // ConversationsOrErr returns the Conversations value or an error if the edge
@@ -46,6 +48,15 @@ func (e UserEdges) ConversationsOrErr() ([]*Conversation, error) {
 		return e.Conversations, nil
 	}
 	return nil, &NotLoadedError{edge: "conversations"}
+}
+
+// MessagesOrErr returns the Messages value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) MessagesOrErr() ([]*Message, error) {
+	if e.loadedTypes[1] {
+		return e.Messages, nil
+	}
+	return nil, &NotLoadedError{edge: "messages"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -114,6 +125,11 @@ func (u *User) Value(name string) (ent.Value, error) {
 // QueryConversations queries the "conversations" edge of the User entity.
 func (u *User) QueryConversations() *ConversationQuery {
 	return NewUserClient(u.config).QueryConversations(u)
+}
+
+// QueryMessages queries the "messages" edge of the User entity.
+func (u *User) QueryMessages() *MessageQuery {
+	return NewUserClient(u.config).QueryMessages(u)
 }
 
 // Update returns a builder for updating this User.

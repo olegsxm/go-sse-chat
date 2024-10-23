@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/olegsxm/go-sse-chat/ent/conversation"
 	"github.com/olegsxm/go-sse-chat/ent/message"
+	"github.com/olegsxm/go-sse-chat/ent/user"
 )
 
 // MessageCreate is the builder for creating a Message entity.
@@ -70,19 +71,42 @@ func (mc *MessageCreate) SetNillableID(u *uuid.UUID) *MessageCreate {
 	return mc
 }
 
-// AddConversationIDs adds the "conversation" edge to the Conversation entity by IDs.
-func (mc *MessageCreate) AddConversationIDs(ids ...uuid.UUID) *MessageCreate {
-	mc.mutation.AddConversationIDs(ids...)
+// SetConversationID sets the "conversation" edge to the Conversation entity by ID.
+func (mc *MessageCreate) SetConversationID(id uuid.UUID) *MessageCreate {
+	mc.mutation.SetConversationID(id)
 	return mc
 }
 
-// AddConversation adds the "conversation" edges to the Conversation entity.
-func (mc *MessageCreate) AddConversation(c ...*Conversation) *MessageCreate {
-	ids := make([]uuid.UUID, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// SetNillableConversationID sets the "conversation" edge to the Conversation entity by ID if the given value is not nil.
+func (mc *MessageCreate) SetNillableConversationID(id *uuid.UUID) *MessageCreate {
+	if id != nil {
+		mc = mc.SetConversationID(*id)
 	}
-	return mc.AddConversationIDs(ids...)
+	return mc
+}
+
+// SetConversation sets the "conversation" edge to the Conversation entity.
+func (mc *MessageCreate) SetConversation(c *Conversation) *MessageCreate {
+	return mc.SetConversationID(c.ID)
+}
+
+// SetUserID sets the "user" edge to the User entity by ID.
+func (mc *MessageCreate) SetUserID(id uuid.UUID) *MessageCreate {
+	mc.mutation.SetUserID(id)
+	return mc
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (mc *MessageCreate) SetNillableUserID(id *uuid.UUID) *MessageCreate {
+	if id != nil {
+		mc = mc.SetUserID(*id)
+	}
+	return mc
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (mc *MessageCreate) SetUser(u *User) *MessageCreate {
+	return mc.SetUserID(u.ID)
 }
 
 // Mutation returns the MessageMutation object of the builder.
@@ -199,10 +223,10 @@ func (mc *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 	}
 	if nodes := mc.mutation.ConversationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   message.ConversationTable,
-			Columns: message.ConversationPrimaryKey,
+			Columns: []string{message.ConversationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(conversation.FieldID, field.TypeUUID),
@@ -211,6 +235,24 @@ func (mc *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.message_conversation = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   message.UserTable,
+			Columns: []string{message.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.message_user = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

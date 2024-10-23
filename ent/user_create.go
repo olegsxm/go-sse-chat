@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/olegsxm/go-sse-chat/ent/conversation"
+	"github.com/olegsxm/go-sse-chat/ent/message"
 	"github.com/olegsxm/go-sse-chat/ent/user"
 )
 
@@ -75,6 +76,21 @@ func (uc *UserCreate) AddConversations(c ...*Conversation) *UserCreate {
 		ids[i] = c[i].ID
 	}
 	return uc.AddConversationIDs(ids...)
+}
+
+// AddMessageIDs adds the "messages" edge to the Message entity by IDs.
+func (uc *UserCreate) AddMessageIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddMessageIDs(ids...)
+	return uc
+}
+
+// AddMessages adds the "messages" edges to the Message entity.
+func (uc *UserCreate) AddMessages(m ...*Message) *UserCreate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return uc.AddMessageIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -199,6 +215,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(conversation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.MessagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.MessagesTable,
+			Columns: []string{user.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

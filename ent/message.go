@@ -10,7 +10,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/olegsxm/go-sse-chat/ent/conversation"
 	"github.com/olegsxm/go-sse-chat/ent/message"
+	"github.com/olegsxm/go-sse-chat/ent/user"
 )
 
 // Message is the model entity for the Message schema.
@@ -26,26 +28,43 @@ type Message struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageQuery when eager-loading is set.
-	Edges        MessageEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges                MessageEdges `json:"edges"`
+	message_conversation *uuid.UUID
+	message_user         *uuid.UUID
+	selectValues         sql.SelectValues
 }
 
 // MessageEdges holds the relations/edges for other nodes in the graph.
 type MessageEdges struct {
 	// Conversation holds the value of the conversation edge.
-	Conversation []*Conversation `json:"conversation,omitempty"`
+	Conversation *Conversation `json:"conversation,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // ConversationOrErr returns the Conversation value or an error if the edge
-// was not loaded in eager-loading.
-func (e MessageEdges) ConversationOrErr() ([]*Conversation, error) {
-	if e.loadedTypes[0] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MessageEdges) ConversationOrErr() (*Conversation, error) {
+	if e.Conversation != nil {
 		return e.Conversation, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: conversation.Label}
 	}
 	return nil, &NotLoadedError{edge: "conversation"}
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MessageEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -61,6 +80,10 @@ func (*Message) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case message.FieldID:
 			values[i] = new(uuid.UUID)
+		case message.ForeignKeys[0]: // message_conversation
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case message.ForeignKeys[1]: // message_user
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -100,6 +123,20 @@ func (m *Message) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				m.CreatedAt = value.Time
 			}
+		case message.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field message_conversation", values[i])
+			} else if value.Valid {
+				m.message_conversation = new(uuid.UUID)
+				*m.message_conversation = *value.S.(*uuid.UUID)
+			}
+		case message.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field message_user", values[i])
+			} else if value.Valid {
+				m.message_user = new(uuid.UUID)
+				*m.message_user = *value.S.(*uuid.UUID)
+			}
 		default:
 			m.selectValues.Set(columns[i], values[i])
 		}
@@ -116,6 +153,11 @@ func (m *Message) Value(name string) (ent.Value, error) {
 // QueryConversation queries the "conversation" edge of the Message entity.
 func (m *Message) QueryConversation() *ConversationQuery {
 	return NewMessageClient(m.config).QueryConversation(m)
+}
+
+// QueryUser queries the "user" edge of the Message entity.
+func (m *Message) QueryUser() *UserQuery {
+	return NewMessageClient(m.config).QueryUser(m)
 }
 
 // Update returns a builder for updating this Message.

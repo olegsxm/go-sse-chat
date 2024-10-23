@@ -39,6 +39,7 @@ func New(s *services.Services) *chi.Mux {
 	h := []controller{
 		&auth{s.Auth()},
 		&conversations{s.Conversation()},
+		&message{s.Message()},
 	}
 
 	for _, h := range h {
@@ -54,7 +55,7 @@ func cancelableContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithCancel(r.Context())
 
-		// TODO THINK ABOUT THAT
+		// TODO THINK ABOUT STOP Request
 		go func() {
 			select {
 			case <-ctx.Done():

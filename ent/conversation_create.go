@@ -197,10 +197,10 @@ func (cc *ConversationCreate) createSpec() (*Conversation, *sqlgraph.CreateSpec)
 	}
 	if nodes := cc.mutation.MessagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   conversation.MessagesTable,
-			Columns: conversation.MessagesPrimaryKey,
+			Columns: []string{conversation.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),

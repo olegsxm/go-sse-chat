@@ -10,7 +10,7 @@ import (
 )
 
 type crudService interface {
-	FindAll(ctx context.Context) (*models.Conversations, error)
+	FindAll(ctx context.Context, id string) (*models.Conversations, error)
 	FindByID(ctx context.Context, id string) (models.Conversation, error)
 	Create(ctx context.Context, id string) (models.Conversation, error)
 	Update(ctx context.Context) (models.Conversation, error)
@@ -22,10 +22,9 @@ type conversations struct {
 }
 
 func (h *conversations) Mount(c *chi.Mux) {
-	cr := chi.NewRouter()
+	router := chi.NewRouter()
 
-	cr.Route("/", func(r chi.Router) {
-		// TODO uncomment
+	router.Route("/", func(r chi.Router) {
 		r.Use(jwtauth.Verifier(tokenAuth), jwtauth.Authenticator(tokenAuth))
 
 		r.Method("Get", "/", Handler(h.getConversations))
@@ -35,16 +34,23 @@ func (h *conversations) Mount(c *chi.Mux) {
 		r.Method("Delete", "/{id}", Handler(h.deleteConversation))
 	})
 
-	c.Mount("/conversations", cr)
+	c.Mount("/conversations", router)
 }
 
 func (h *conversations) getConversations(w http.ResponseWriter, r *http.Request) error {
-	all, err := h.s.FindAll(r.Context())
+	_, m, err := jwtauth.FromContext(r.Context())
 	if err != nil {
 		return err
 	}
 
-	json, err := all.MarshalJSON()
+	var clientID = m["id"].(string)
+
+	convs, err := h.s.FindAll(r.Context(), clientID)
+	if err != nil {
+		return err
+	}
+
+	json, err := convs.MarshalJSON()
 	if err != nil {
 		return err
 	}
@@ -79,8 +85,6 @@ func (h *conversations) createConversation(w http.ResponseWriter, r *http.Reques
 	if _, ok := m["id"]; ok {
 		senderID = m["id"].(string)
 	}
-
-	chi.URLParam(r, "to")
 
 	c, err := h.s.Create(r.Context(), senderID)
 	if err != nil {

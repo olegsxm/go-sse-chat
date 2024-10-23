@@ -7,6 +7,7 @@ import (
 type Repository struct {
 	auth *UserRepository
 	conv *ConversationRepository
+	msg  *MessageRepository
 }
 
 func (r *Repository) Auth() *UserRepository {
@@ -17,13 +18,20 @@ func (r *Repository) Conversations() *ConversationRepository {
 	return r.conv
 }
 
+func (r *Repository) Messages() *MessageRepository {
+	return r.msg
+}
+
 func New(d *db.Db) *Repository {
 	return &Repository{
 		auth: &UserRepository{
-			db: d.SQL(),
+			ent: d.SQL(),
 		},
 		conv: &ConversationRepository{
-			db: d.SQL(),
+			ent: d.SQL(),
+		},
+		msg: &MessageRepository{
+			ent: d.SQL(),
 		},
 	}
 }

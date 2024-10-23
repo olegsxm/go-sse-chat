@@ -28,11 +28,13 @@ const (
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UserInverseTable = "users"
-	// MessagesTable is the table that holds the messages relation/edge. The primary key declared below.
-	MessagesTable = "message_conversation"
+	// MessagesTable is the table that holds the messages relation/edge.
+	MessagesTable = "messages"
 	// MessagesInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
 	MessagesInverseTable = "messages"
+	// MessagesColumn is the table column denoting the messages relation/edge.
+	MessagesColumn = "message_conversation"
 )
 
 // Columns holds all SQL columns for conversation fields.
@@ -46,9 +48,6 @@ var (
 	// UserPrimaryKey and UserColumn2 are the table columns denoting the
 	// primary key for the user relation (M2M).
 	UserPrimaryKey = []string{"conversation_id", "user_id"}
-	// MessagesPrimaryKey and MessagesColumn2 are the table columns denoting the
-	// primary key for the messages relation (M2M).
-	MessagesPrimaryKey = []string{"message_id", "conversation_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -122,6 +121,6 @@ func newMessagesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MessagesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, MessagesTable, MessagesPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.O2M, true, MessagesTable, MessagesColumn),
 	)
 }

@@ -3,11 +3,12 @@ package services
 import (
 	"context"
 	"github.com/olegsxm/go-sse-chat/ent"
+	"github.com/olegsxm/go-sse-chat/ent/message"
 	"github.com/olegsxm/go-sse-chat/internal/models"
 )
 
 type crudRepo interface {
-	Get(ctx context.Context) ([]*ent.Conversation, error)
+	Get(ctx context.Context, clientID string) ([]*ent.Conversation, error)
 	GetByID(ctx context.Context, id string) (*ent.Conversation, error)
 	Create(ctx context.Context, id string) (*ent.Conversation, error)
 	Update(ctx context.Context, conv models.Conversation) error
@@ -18,8 +19,8 @@ type ConversationService struct {
 	r crudRepo
 }
 
-func (c *ConversationService) FindAll(ctx context.Context) (*models.Conversations, error) {
-	all, err := c.r.Get(ctx)
+func (c *ConversationService) FindAll(ctx context.Context, clientID string) (*models.Conversations, error) {
+	all, err := c.r.Get(ctx, clientID)
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +32,16 @@ func (c *ConversationService) FindAll(ctx context.Context) (*models.Conversation
 			Id:     v.ID.String(),
 			Avatar: v.Avatar,
 			Name:   v.Name,
+		}
+
+		msg, e := v.QueryMessages().Order(ent.Desc(message.FieldCreatedAt)).First(ctx)
+		if e == nil {
+			cs[i].Message = &models.Message{
+				Id:        msg.ID.String(),
+				Message:   msg.Message,
+				Read:      msg.Read,
+				CreatedAt: msg.CreatedAt.UTC().String(),
+			}
 		}
 	}
 
