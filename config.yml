@@ -1,0 +1,21 @@
+#SERVER_PORT=":3000"
+#
+#PG_HOST="localhost"
+#PG_PORT="5432"
+#PG_USER="puser"
+#PG_PASSWORD="ppassword"
+#PG_DATABASE="db"
+#
+#JWT_SECRET_KEY="2b78e9e1049b02b4443b6eb6608e1355"
+#PASSWORD_PAPPER="4792a50534c999711bbe9d7f72bf1a73"
+
+server_port: ":3000"
+pg:
+   host: "localhost"
+   port: "5432"
+   user: "puser"
+   password: "ppassword"
+   database: "db"
+security:
+  jwt_secret: "2b78e9e1049b02b4443b6eb6608e1355"
+  password_pepper: "4792a50534c999711bbe9d7f72bf1a73"
