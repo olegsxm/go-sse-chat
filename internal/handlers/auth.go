@@ -21,6 +21,7 @@ type authHandlers struct {
 func (h *authHandlers) Mount(g *echo.Group) {
 	g.POST("/sign-in", h.signIn)
 	g.POST("/sign-up", h.signUp)
+	g.POST("/refresh", h.refreshToken)
 }
 
 func (h *authHandlers) signIn(c echo.Context) error {
@@ -76,6 +77,10 @@ func (h *authHandlers) signUp(c echo.Context) error {
 	})
 
 	return c.JSON(200, resp)
+}
+
+func (h *authHandlers) refreshToken(c echo.Context) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "Not Implemented")
 }
 
 func newAuthHandlers(service authService) *authHandlers {
