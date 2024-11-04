@@ -9,7 +9,6 @@ import (
 	"encoding/hex"
 	"errors"
 	jwt2 "github.com/golang-jwt/jwt/v5"
-	"github.com/spf13/viper"
 	"log/slog"
 	"time"
 )
@@ -21,15 +20,17 @@ type userRepository interface {
 
 type AuthService struct {
 	userRepository userRepository
+	passPepper     string
+	jwtSecret      string
 }
 
 func (a AuthService) SignUp(ctx context.Context, login, password string) (models.AuthResponse, string, error) {
-	user, err := a.CreateUser(ctx, login, password)
+	user, err := a.createUser(ctx, login, password, a.passPepper)
 	if err != nil {
 		return models.AuthResponse{}, "", err
 	}
 
-	token, refresh, err := a.CreateTokens(user)
+	token, refresh, err := a.createTokens(user, a.jwtSecret)
 	if err != nil {
 		return models.AuthResponse{}, "", err
 	}
@@ -49,11 +50,11 @@ func (a AuthService) SignIn(ctx context.Context, login, password string) (models
 		return models.AuthResponse{}, "", errors.New("internal server error") // TODO add errors
 	}
 
-	if a.hashPassword(password, u.Salt) != u.Password {
+	if a.hashPassword(password, a.passPepper, u.Salt) != u.Password {
 		return models.AuthResponse{}, "", errors.New("invalid credentials")
 	}
 
-	token, refresh, err := a.CreateTokens(models.UserDTO{Id: u.Id.String(), Login: u.Login})
+	token, refresh, err := a.createTokens(models.UserDTO{Id: u.Id.String(), Login: u.Login}, a.jwtSecret)
 	if err != nil {
 		slog.Error("CreateTokens error", err)
 		return models.AuthResponse{}, "", err
@@ -70,14 +71,14 @@ func (a AuthService) SignIn(ctx context.Context, login, password string) (models
 	return response, refresh, nil
 }
 
-func (a AuthService) CreateUser(ctx context.Context, login, password string) (models.UserDTO, error) {
+func (a AuthService) createUser(ctx context.Context, login, password, pepper string) (models.UserDTO, error) {
 	salt, err := a.generatePasswordSalt()
 	if err != nil {
 		slog.Error(err.Error())
 		return models.UserDTO{}, errors.New("failed to generate password salt")
 	}
 
-	hash := a.hashPassword(password, salt)
+	hash := a.hashPassword(password, pepper, salt)
 
 	user, err := a.userRepository.CreateUser(ctx, login, hash, salt)
 	if err != nil {
@@ -88,14 +89,14 @@ func (a AuthService) CreateUser(ctx context.Context, login, password string) (mo
 	return user.ToDTO(), nil
 }
 
-func (a AuthService) CreateTokens(user models.UserDTO) (string, string, error) {
-	secret := viper.GetString("security.jwt_secret")
+func (a AuthService) createTokens(user models.UserDTO, jwtSecret string) (string, string, error) {
 	tokenClaims := &jwt.ChatClaims{
 		Id:    user.Id,
 		Login: user.Login,
+		Key:   "token",
 	}
 	tokenClaims.ExpiresAt = jwt2.NewNumericDate(time.Now().Add(time.Minute * 1))
-	token, err := jwt.CreateToken(tokenClaims, secret)
+	token, err := jwt.CreateToken(tokenClaims, jwtSecret)
 	if err != nil {
 		return "", "", err
 	}
@@ -103,9 +104,10 @@ func (a AuthService) CreateTokens(user models.UserDTO) (string, string, error) {
 	refresh := &jwt.ChatClaims{
 		Id:    user.Id,
 		Login: user.Login,
+		Key:   "refresh",
 	}
 	refresh.ExpiresAt = jwt2.NewNumericDate(time.Now().Add(time.Hour * 24))
-	refreshToken, err := jwt.CreateToken(refresh, secret)
+	refreshToken, err := jwt.CreateToken(refresh, jwtSecret)
 
 	if err != nil {
 		return "", "", err
@@ -127,9 +129,9 @@ func (a AuthService) generatePasswordSalt() ([]byte, error) {
 	return salt, nil
 }
 
-func (a AuthService) hashPassword(password string, salt []byte) string {
+func (a AuthService) hashPassword(password, pepper string, salt []byte) string {
 	passBytes := []byte(password)
-	pepperBytes := []byte(viper.GetString("security.password_pepper")) // TODO refactor
+	pepperBytes := []byte(pepper)
 
 	hasher := sha512.New()
 
@@ -145,14 +147,16 @@ func (a AuthService) hashPassword(password string, salt []byte) string {
 	return hex.EncodeToString(hashedPasswordBytes)
 }
 
-func (a AuthService) checkPassword(password, hashedPassword string, salt []byte) bool {
-	hash := a.hashPassword(password, salt)
+func (a AuthService) checkPassword(password, hashedPassword, pepper string, salt []byte) bool {
+	hash := a.hashPassword(password, pepper, salt)
 	return hashedPassword == hash
 }
 
 // Constructor
-func newAuthService(ur userRepository) AuthService {
+func newAuthService(ur userRepository, jwtSecret, pepper string) AuthService {
 	return AuthService{
 		userRepository: ur,
+		passPepper:     pepper,
+		jwtSecret:      jwtSecret,
 	}
 }

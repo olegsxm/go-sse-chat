@@ -16,6 +16,7 @@ type Handlers struct {
 
 func (h *Handlers) Mount() {
 	newAuthHandlers(h.deps.Services.Auth()).Mount(h.deps.Api.Group("/auth"))
+	newConversationHandler(h.deps.Services.Conversation())
 }
 
 func New(d Dependencies) *Handlers {

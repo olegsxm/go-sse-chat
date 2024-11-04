@@ -27,7 +27,7 @@ func Run(cfg config.Config) {
 
 	r := repository.New(db)
 
-	s := services.NewServices(r)
+	s := services.NewServices(r, cfg)
 
 	handlers.New(handlers.Dependencies{
 		Api:      api,
