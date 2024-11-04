@@ -36,11 +36,17 @@ tmp_dir = "tmp"
 
 [log]
   main_only = false
+  silent = true
   time = false
 
 [misc]
   clean_on_exit = false
 
+[proxy]
+  app_port = 0
+  enabled = false
+  proxy_port = 0
+
 [screen]
-  clear_on_rebuild = true
+  clear_on_rebuild = false
   keep_scroll = true

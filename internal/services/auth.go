@@ -46,7 +46,7 @@ func (a AuthService) SignUp(ctx context.Context, login, password string) (models
 func (a AuthService) SignIn(ctx context.Context, login, password string) (models.AuthResponse, string, error) {
 	u, err := a.userRepository.FindUserByLogin(ctx, login)
 	if err != nil {
-		slog.Error("FindUserByLogin error", err)
+		slog.Error("FindUserByLogin error", err.Error())
 		return models.AuthResponse{}, "", errors.New("internal server error") // TODO add errors
 	}
 
@@ -56,7 +56,7 @@ func (a AuthService) SignIn(ctx context.Context, login, password string) (models
 
 	token, refresh, err := a.createTokens(models.UserDTO{Id: u.Id.String(), Login: u.Login}, a.jwtSecret)
 	if err != nil {
-		slog.Error("CreateTokens error", err)
+		slog.Error("CreateTokens error", err.Error())
 		return models.AuthResponse{}, "", err
 	}
 
