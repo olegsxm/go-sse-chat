@@ -11,10 +11,10 @@ type MessageRepository struct {
 	queries *queries.Queries
 }
 
-func (m MessageRepository) Create(ctx context.Context, message string, conversationID, userID uuid.UUID) (models.Message, error) {
+func (m MessageRepository) Create(ctx context.Context, message string, conversationID, senderID uuid.UUID) (models.Message, error) {
 	msg, err := m.queries.CreateMessage(ctx, queries.CreateMessageParams{
 		Message:        message,
-		SenderID:       userID,
+		SenderID:       senderID,
 		ConversationID: conversationID,
 	})
 

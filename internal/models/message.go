@@ -20,3 +20,7 @@ type MessageDTO struct {
 	CreatedAt      time.Time `json:"createdAt"`
 	Sender         UserDTO   `json:"sender"`
 }
+
+type MessageRequest struct {
+	Message string `json:"message"`
+}

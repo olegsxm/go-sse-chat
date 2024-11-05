@@ -5,6 +5,7 @@ import (
 	"chat/internal/handlers"
 	"chat/internal/pkg/config"
 	"chat/internal/pkg/server"
+	"chat/internal/pkg/sse"
 	"chat/internal/repository"
 	"chat/internal/services"
 	"context"
@@ -29,10 +30,13 @@ func Run(cfg config.Config) {
 
 	s := services.NewServices(r, cfg)
 
+	sseBroker := sse.NewBroker()
+
 	handlers.New(handlers.Dependencies{
-		Api:      api,
-		Services: s,
-		Config:   cfg,
+		Api:           api,
+		Services:      s,
+		Config:        cfg,
+		MessageBroker: sseBroker,
 	}).Mount()
 
 	go func() {

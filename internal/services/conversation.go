@@ -3,6 +3,7 @@ package services
 import (
 	"chat/internal/models"
 	"context"
+	"errors"
 	"github.com/google/uuid"
 	"log/slog"
 )
@@ -46,7 +47,6 @@ func (c ConversationService) CreateConversationWithMessage(ctx context.Context, 
 	}
 
 	// TODO Set dialog name
-
 	res := models.ConversationDTO{
 		Id:      conv.Id.String(),
 		Name:    conv.Name,
@@ -76,6 +76,38 @@ func (c ConversationService) SetConversationName(ctx context.Context, conversati
 	return err
 }
 
+func (c ConversationService) CreateMessage(ctx context.Context, conversationID, senderID, message string) (models.MessageDTO, error) {
+	cUid, err := uuid.Parse(conversationID)
+	if err != nil {
+		return models.MessageDTO{}, errors.New("conversation id parse error")
+	}
+
+	senderUid, err := uuid.Parse(senderID)
+	if err != nil {
+		slog.Error("conversation id parse error", err.Error())
+		return models.MessageDTO{}, errors.New("sender id parse error")
+	}
+
+	m, e := c.messageRepository.Create(ctx, message, cUid, senderUid)
+	if e != nil {
+		slog.Error("conversation message error", e.Error())
+		return models.MessageDTO{}, errors.New("create message error")
+	}
+
+	res := models.MessageDTO{
+		Id:             m.Id.String(),
+		Message:        m.Message,
+		ConversationId: m.ConversationId.String(),
+		CreatedAt:      m.CreatedAt,
+		Sender: models.UserDTO{
+			Id: m.SenderId.String(),
+		},
+	}
+
+	return res, nil
+}
+
+// CONSTRUCTOR
 type conversationServiceDependencies struct {
 	conversationRepository conversationRepository
 	participantRepository  participantRepository

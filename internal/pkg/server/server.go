@@ -38,7 +38,13 @@ func New() *echo.Echo {
 	}
 
 	e.Use(middleware.Secure())
-	e.Use(middleware.CORS())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{
+			"*",
+		},
+		AllowHeaders:     []string{"*"},
+		AllowCredentials: false,
+	}))
 	e.Use(middleware.Recover())
 
 	return e
