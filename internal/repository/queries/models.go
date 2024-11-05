@@ -12,6 +12,7 @@ import (
 type Conversation struct {
 	ID        uuid.UUID
 	Name      *string
+	Private   *bool
 	CreatedAt pgtype.Timestamptz
 	DeletedAt pgtype.Timestamptz
 }

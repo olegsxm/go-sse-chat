@@ -32,6 +32,7 @@ func Run(cfg config.Config) {
 	handlers.New(handlers.Dependencies{
 		Api:      api,
 		Services: s,
+		Config:   cfg,
 	}).Mount()
 
 	go func() {

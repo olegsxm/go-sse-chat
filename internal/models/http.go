@@ -9,3 +9,8 @@ type AuthResponse struct {
 	Token string  `json:"token"`
 	User  UserDTO `json:"user"`
 }
+
+type CreatePrivateConversationRequest struct {
+	Message     string `json:"message" validate:"required"`
+	Participant string `json:"participant" validate:"required,uuid"`
+}

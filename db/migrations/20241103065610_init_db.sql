@@ -15,6 +15,7 @@ SELECT 'up SQL query';
     CREATE TABLE IF NOT EXISTS conversations (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         name TEXT,
+        private BOOLEAN DEFAULT true,
         created_at timestamptz DEFAULT now()
     );
 

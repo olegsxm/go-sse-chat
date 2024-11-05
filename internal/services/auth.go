@@ -95,7 +95,7 @@ func (a AuthService) createTokens(user models.UserDTO, jwtSecret string) (string
 		Login: user.Login,
 		Key:   "token",
 	}
-	tokenClaims.ExpiresAt = jwt2.NewNumericDate(time.Now().Add(time.Minute * 1))
+	tokenClaims.ExpiresAt = jwt2.NewNumericDate(time.Now().Add(time.Hour * 1))
 	token, err := jwt.CreateToken(tokenClaims, jwtSecret)
 	if err != nil {
 		return "", "", err
