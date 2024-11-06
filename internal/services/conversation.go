@@ -18,6 +18,7 @@ type conversationRepository interface {
 
 type participantRepository interface {
 	Create(ctx context.Context, conversation, userID uuid.UUID) error
+	GetConversationParticipants(ctx context.Context, conversationID uuid.UUID) ([]models.UserDTO, error)
 }
 
 type messageRepository interface {
@@ -76,22 +77,23 @@ func (c ConversationService) SetConversationName(ctx context.Context, conversati
 	return err
 }
 
-func (c ConversationService) CreateMessage(ctx context.Context, conversationID, senderID, message string) (models.MessageDTO, error) {
+func (c ConversationService) CreateMessage(ctx context.Context, conversationID, senderID, message string) (models.MessageDTO, []models.UserDTO, error) {
+	var err error
 	cUid, err := uuid.Parse(conversationID)
 	if err != nil {
-		return models.MessageDTO{}, errors.New("conversation id parse error")
+		return models.MessageDTO{}, nil, errors.New("conversation id parse error")
 	}
 
 	senderUid, err := uuid.Parse(senderID)
 	if err != nil {
 		slog.Error("conversation id parse error", err.Error())
-		return models.MessageDTO{}, errors.New("sender id parse error")
+		return models.MessageDTO{}, nil, errors.New("sender id parse error")
 	}
 
 	m, e := c.messageRepository.Create(ctx, message, cUid, senderUid)
 	if e != nil {
 		slog.Error("conversation message error", e.Error())
-		return models.MessageDTO{}, errors.New("create message error")
+		return models.MessageDTO{}, nil, errors.New("message create error")
 	}
 
 	res := models.MessageDTO{
@@ -104,7 +106,12 @@ func (c ConversationService) CreateMessage(ctx context.Context, conversationID, 
 		},
 	}
 
-	return res, nil
+	participants, err := c.participantRepository.GetConversationParticipants(ctx, cUid)
+	if err != nil {
+		slog.Error("conversation participants error", err.Error())
+		return models.MessageDTO{}, nil, err
+	}
+	return res, participants, nil
 }
 
 // CONSTRUCTOR

@@ -19,6 +19,7 @@ HAVING array_agg(p.user_id order by p.user_id) =
        array [$1]::uuid[]
 `
 
+// эта хня не работает
 func (q *Queries) CheckConversationParticipants(ctx context.Context, dollar_1 []uuid.UUID) ([]uuid.UUID, error) {
 	rows, err := q.db.Query(ctx, checkConversationParticipants, dollar_1)
 	if err != nil {

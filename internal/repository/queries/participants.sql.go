@@ -12,7 +12,8 @@ import (
 )
 
 const createParticipant = `-- name: CreateParticipant :exec
-INSERT INTO participants (conversation_id, user_id) VALUES ($1, $2)
+INSERT INTO participants (conversation_id, user_id)
+VALUES ($1, $2)
 `
 
 type CreateParticipantParams struct {
@@ -23,4 +24,37 @@ type CreateParticipantParams struct {
 func (q *Queries) CreateParticipant(ctx context.Context, arg CreateParticipantParams) error {
 	_, err := q.db.Exec(ctx, createParticipant, arg.ConversationID, arg.UserID)
 	return err
+}
+
+const getConversationParticipants = `-- name: GetConversationParticipants :many
+SELECT users.id, users.login, users.password, users.salt, users.created_at, users.deleted_at FROM participants
+JOIN users
+ON participants.conversation_id = $1 AND participants.user_id = users.id
+`
+
+func (q *Queries) GetConversationParticipants(ctx context.Context, conversationID uuid.UUID) ([]User, error) {
+	rows, err := q.db.Query(ctx, getConversationParticipants, conversationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Login,
+			&i.Password,
+			&i.Salt,
+			&i.CreatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

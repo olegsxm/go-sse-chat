@@ -12,7 +12,7 @@ import (
 
 type conversationService interface {
 	CreateConversationWithMessage(ctx context.Context, message, senderID, participantID string) (models.ConversationDTO, error)
-	CreateMessage(ctx context.Context, conversationID, senderID, message string) (models.MessageDTO, error)
+	CreateMessage(ctx context.Context, conversationID, senderID, message string) (models.MessageDTO, []models.UserDTO, error)
 }
 
 type conversationHandler struct {
@@ -71,13 +71,17 @@ func (h *conversationHandler) createMessage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	message, err := h.service.CreateMessage(c.Request().Context(), conversationID, claims.Id, req.Message)
+	message, participants, err := h.service.CreateMessage(c.Request().Context(), conversationID, claims.Id, req.Message)
 	if err != nil {
 		slog.Error("Error creating message", err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
 	}
 
-	h.messageBroker.SendMessage("c2a10d7b-fb17-4f0b-b620-6641b91e5c11", "new Message")
+	for _, p := range participants {
+		if p.Id != claims.Id {
+			h.messageBroker.SendMessage(p.Id, message)
+		}
+	}
 
 	return c.JSON(http.StatusOK, message)
 }
